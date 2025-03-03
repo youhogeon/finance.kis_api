@@ -1,30 +1,28 @@
 package com.youhogeon.finance.kis_api.config;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 
 /**
  * API 인증 정보
  */
-@Builder
 @Data
-@RequiredArgsConstructor
-@AllArgsConstructor
 public class Credentials {
 
-    @NonNull
     private String apiKey;
-
-    @NonNull
     private String apiSecret;
 
-    @Builder.Default
-    private int restLimitPerSecond = 20;
+    private String apiToken;
 
-    @Builder.Default
+    private int restLimitPerSecond = 20;
     private int socketLimitPerSecond = 41;
+
+    public Credentials(String apiKey, String apiSecret) {
+        this.apiKey = apiKey;
+        this.apiSecret = apiSecret;
+    }
+
+    public Credentials(String apiToken) {
+        this.apiToken = apiToken;
+    }
 
 }

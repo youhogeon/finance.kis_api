@@ -7,13 +7,9 @@ public class ConfigurationTest {
     @Test
     public void testAddCredentials() {
         Configuration config = new Configuration();
-        Credentials credentials = Credentials.builder()
-            .apiKey("myApiKey")
-            .apiSecret("myApiSecret")
-            .build();
+        Credentials credentials = new Credentials("myApiKey", "myApiSecret");
 
         config.addCredentials("myCredentials", credentials);
-
 
         assert(config.getAllCredentials().get("myCredentials").equals(credentials));
         assert(config.getCredentials("myCredentials").equals(credentials));

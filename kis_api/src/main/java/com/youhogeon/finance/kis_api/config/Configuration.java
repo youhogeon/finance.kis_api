@@ -9,21 +9,32 @@ import java.util.Map;
 public class Configuration {
 
     private Map<String, Credentials> credentials = new HashMap<>();
+    private CredentialsSelectionStrategy credentialsSelector = new SimpleCredentialsSelector();
+
+    public void addCredentials(Credentials credentials) {
+        String uuid = java.util.UUID.randomUUID().toString();
+
+        this.addCredentials(uuid, credentials);
+    }
 
     public void addCredentials(String name, Credentials credentials) {
         this.credentials.put(name, credentials);
+    }
+
+    public void setCredentialsSelector(CredentialsSelectionStrategy credentialsSelector) {
+        this.credentialsSelector = credentialsSelector;
     }
 
     protected Map<String, Credentials> getAllCredentials() {
         return credentials;
     }
 
-    protected Credentials getCredentials(String name) {
-        if (!credentials.containsKey(name)) {
-            throw new IllegalArgumentException("Credentials not found: " + name);
-        }
+    protected Credentials getCredentials() {
+        return credentialsSelector.getCredentials(credentials);
+    }
 
-        return credentials.get(name);
+    protected Credentials getCredentials(String name) {
+        return credentialsSelector.getCredentials(credentials, name);
     }
 
 }
