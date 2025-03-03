@@ -126,8 +126,19 @@ public class KisClient {
 
     @SuppressWarnings("unchecked")
     private <T extends ApiResponse> Class<T> getGenericType(Api<T> api) {
-        Type[] genericInterfaces = api.getClass().getGenericInterfaces();
-        ParameterizedType parameterizedType = (ParameterizedType) genericInterfaces[0];
+        Type generic = api.getClass().getGenericSuperclass();
+
+        if (generic == null) {
+            Type[] genericInterfaces = api.getClass().getGenericInterfaces();
+
+            if (genericInterfaces.length == 0) {
+                return null;
+            }
+
+            generic = genericInterfaces[0];
+        }
+
+        ParameterizedType parameterizedType = (ParameterizedType) generic;
 
         return (Class<T>) parameterizedType.getActualTypeArguments()[0];
     }
