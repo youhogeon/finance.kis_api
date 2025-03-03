@@ -8,21 +8,21 @@ import lombok.Data;
 @Data
 public class Credentials {
 
-    private String apiKey;
-    private String apiSecret;
+    private String appKey;
+    private String appSecret;
 
-    private String apiToken;
+    private String appToken;
 
     private int restLimitPerSecond = 20;
     private int socketLimitPerSecond = 41;
 
     public Credentials(String apiKey, String apiSecret) {
-        this.apiKey = apiKey;
-        this.apiSecret = apiSecret;
+        this.appKey = apiKey;
+        this.appSecret = apiSecret;
     }
 
     public Credentials(String apiToken) {
-        this.apiToken = apiToken;
+        this.appToken = apiToken;
     }
 
 }

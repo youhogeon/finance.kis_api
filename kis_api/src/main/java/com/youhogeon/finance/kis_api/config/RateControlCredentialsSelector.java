@@ -6,9 +6,10 @@ import com.youhogeon.finance.kis_api.util.RateLimiter;
 
 /**
  * RateControlCredentialsSelector
+ *
+ * 임시 구현. getCredentials가 유량 제어되는게 아니라 network request가 유량 제어되어야 함. 수정 필요.
  */
-@Deprecated
-public class RateControlCredentialsSelector extends SimpleCredentialsSelector {
+public class RateControlCredentialsSelector implements CredentialsSelectionStrategy {
 
     private Map<String, RateLimiter> rateLimiters;
 
@@ -59,6 +60,21 @@ public class RateControlCredentialsSelector extends SimpleCredentialsSelector {
         rateLimiter.acquire();
 
         return c;
+    }
+
+    @Override
+    public Credentials getCredentials(Map<String, Credentials> credentials, String name) {
+        if (!credentials.containsKey(name)) {
+            throw new IllegalArgumentException("Credentials not found: " + name);
+        }
+
+        Credentials c = credentials.get(name);
+
+        RateLimiter rateLimiter = getRateLimiter(name, c);
+
+        rateLimiter.acquire();
+
+        return credentials.get(name);
     }
 
 }

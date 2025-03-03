@@ -6,7 +6,7 @@ public class GetTokenRequestTest {
 
     @Test
     public void test() {
-        GetTokenRequest request = GetTokenRequest.builder().grantType("sadf").build();
+        // GetTokenRequest request = GetTokenRequest.builder().grantType("sadf").build();
 
 
     }

@@ -3,10 +3,17 @@ package com.youhogeon.finance.kis_api.config;
 import java.util.HashMap;
 import java.util.Map;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * API 설정
  */
 public class Configuration {
+
+    @Getter
+    @Setter
+    private String apiHost = "https://openapi.koreainvestment.com:9443";
 
     private Map<String, Credentials> credentials = new HashMap<>();
     private CredentialsSelectionStrategy credentialsSelector = new SimpleCredentialsSelector();
@@ -25,15 +32,15 @@ public class Configuration {
         this.credentialsSelector = credentialsSelector;
     }
 
-    protected Map<String, Credentials> getAllCredentials() {
+    public Map<String, Credentials> getAllCredentials() {
         return credentials;
     }
 
-    protected Credentials getCredentials() {
+    public Credentials getCredentials() {
         return credentialsSelector.getCredentials(credentials);
     }
 
-    protected Credentials getCredentials(String name) {
+    public Credentials getCredentials(String name) {
         return credentialsSelector.getCredentials(credentials, name);
     }
 

@@ -8,8 +8,8 @@ public class CredentialsTest {
     public void testAllArgsConstructor() {
         Credentials credentials = new Credentials("myApiKey", "myApiSecret");
 
-        assert(credentials.getApiKey().equals("myApiKey"));
-        assert(credentials.getApiSecret().equals("myApiSecret"));
+        assert(credentials.getAppKey().equals("myApiKey"));
+        assert(credentials.getAppSecret().equals("myApiSecret"));
     }
 
     @Test
