@@ -17,11 +17,12 @@ public class Credentials {
     private int socketLimitPerSecond = 41;
 
     public Credentials(String apiKey, String apiSecret) {
-        this.appKey = apiKey;
-        this.appSecret = apiSecret;
+        this(apiKey, apiSecret, null);
     }
 
-    public Credentials(String apiToken) {
+    public Credentials(String apiKey, String apiSecret, String apiToken) {
+        this.appKey = apiKey;
+        this.appSecret = apiSecret;
         this.appToken = apiToken;
     }
 

@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.youhogeon.finance.kis_api.api.Api;
-import com.youhogeon.finance.kis_api.api.ApiResult;
+import com.youhogeon.finance.kis_api.api.ApiResponse;
 import com.youhogeon.finance.kis_api.api.GetTokenRequest;
 import com.youhogeon.finance.kis_api.api.GetTokenResponse;
 import com.youhogeon.finance.kis_api.client.ApiParser;
@@ -31,13 +31,13 @@ public class KisClient {
         this.httpClient = new JavaHttpClient(config.getApiHost());
     }
 
-    public <T extends ApiResult> T execute(Api<T> api) {
+    public <T extends ApiResponse> T execute(Api<T> api) {
         Credentials credentials = config.getCredentials();
 
         return execute(api, credentials);
     }
 
-    public <T extends ApiResult> T execute(Api<T> api, String credentialsName) {
+    public <T extends ApiResponse> T execute(Api<T> api, String credentialsName) {
         Credentials credentials = config.getCredentials(credentialsName);
 
         return execute(api, credentials);
@@ -70,7 +70,7 @@ public class KisClient {
         return resp.getAccessToken();
     }
 
-    private <T extends ApiResult> T execute(Api<T> api, Credentials credentials) {
+    private <T extends ApiResponse> T execute(Api<T> api, Credentials credentials) {
         ApiParser parser = new ApiParser(api);
 
         String method = parser.getMethod();
@@ -104,7 +104,7 @@ public class KisClient {
     }
 
     @SuppressWarnings("unchecked")
-    private <T extends ApiResult> Class<T> getGenericType(Api<T> api) {
+    private <T extends ApiResponse> Class<T> getGenericType(Api<T> api) {
         Type[] genericInterfaces = api.getClass().getGenericInterfaces();
         ParameterizedType parameterizedType = (ParameterizedType) genericInterfaces[0];
 

@@ -3,7 +3,7 @@ package com.youhogeon.finance.kis_api.client;
 import org.junit.jupiter.api.Test;
 
 import com.youhogeon.finance.kis_api.api.Api;
-import com.youhogeon.finance.kis_api.api.ApiResult;
+import com.youhogeon.finance.kis_api.api.ApiResponse;
 import com.youhogeon.finance.kis_api.api.annotation.Body;
 import com.youhogeon.finance.kis_api.api.annotation.BodyCredentialsRequired;
 import com.youhogeon.finance.kis_api.api.annotation.Header;
@@ -11,7 +11,7 @@ import com.youhogeon.finance.kis_api.api.annotation.Method;
 import com.youhogeon.finance.kis_api.api.annotation.Parameter;
 import com.youhogeon.finance.kis_api.api.annotation.URL;
 
-class SampleApiResponse implements ApiResult {
+class SampleApiResponse implements ApiResponse {
 
 }
 

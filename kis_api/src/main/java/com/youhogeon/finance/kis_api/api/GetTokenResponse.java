@@ -7,7 +7,7 @@ import lombok.Data;
 
 @Data
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class GetTokenResponse implements ApiResult {
+public class GetTokenResponse implements ApiResponse {
 
     private String accessToken;
     private String tokenType;

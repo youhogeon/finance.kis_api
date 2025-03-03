@@ -74,7 +74,11 @@ public class JavaHttpClient implements com.youhogeon.finance.kis_api.client.http
             .uri(URI.create(fullUrl));
 
         for (Map.Entry<String, Object> entry : request.getHeaders().entrySet()) {
-            requestBuilder.header(entry.getKey(), entry.getValue().toString());
+            if (entry.getValue() == null) {
+                continue;
+            }
+
+            requestBuilder = requestBuilder.header(entry.getKey(), entry.getValue().toString());
         }
 
         return requestBuilder;

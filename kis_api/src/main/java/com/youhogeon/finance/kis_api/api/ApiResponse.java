@@ -1,5 +1,5 @@
 package com.youhogeon.finance.kis_api.api;
 
-public interface ApiResult {
+public interface ApiResponse {
 
 }

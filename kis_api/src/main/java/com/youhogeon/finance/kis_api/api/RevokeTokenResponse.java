@@ -1,6 +1,6 @@
 package com.youhogeon.finance.kis_api.api;
 
-public class RevokeTokenResponse implements ApiResult {
+public class RevokeTokenResponse implements ApiResponse {
 
     private String token;
 
