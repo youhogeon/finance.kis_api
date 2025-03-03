@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 
 import com.youhogeon.finance.kis_api.api.ErrorResponse;
@@ -32,7 +33,7 @@ public class JavaHttpClient implements com.youhogeon.finance.kis_api.client.http
     }
 
     @Override
-    public <T> T execute(HttpClientRequest request, Class<T> responseClass) {
+    public HttpClientResponse execute(HttpClientRequest request) throws IOException {
         HttpResponse<String> response = null;
 
         try {
@@ -42,28 +43,24 @@ public class JavaHttpClient implements com.youhogeon.finance.kis_api.client.http
                 response = GET(request);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            throw e;
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            throw new IOException("Failed to get response from server. (InterruptedException)");
         }
 
         if (response == null) {
-            throw new InvalidApiRequestException("Failed to get response from server.");
+            throw new IOException("Failed to get response from server.");
         }
 
         String responseString = response.body();
         int statusCode = response.statusCode();
+        Map<String, List<String>> headers = response.headers().map();
 
-        if (responseString == null) {
-            throw new InvalidApiRequestException("Failed to get response from server. (no response, status code: " + statusCode + ")");
-        }
-
-        if (response.statusCode() != 200) {
-            ErrorResponse errorResponse = JsonConverter.fromJson(responseString, ErrorResponse.class);
-            throw new InvalidApiRequestException(errorResponse.getErrorDescription(), errorResponse.getErrorCode());
-        }
-
-        return JsonConverter.fromJson(responseString, responseClass);
+        return HttpClientResponse.builder()
+            .statusCode(statusCode)
+            .headers(headers)
+            .body(responseString)
+            .build();
     }
 
     public HttpRequest.Builder getRequestBuilder(HttpClientRequest request) {

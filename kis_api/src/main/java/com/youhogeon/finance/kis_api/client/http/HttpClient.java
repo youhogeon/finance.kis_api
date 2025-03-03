@@ -1,7 +1,9 @@
 package com.youhogeon.finance.kis_api.client.http;
 
+import java.io.IOException;
+
 public interface HttpClient {
 
-    public <T> T execute(HttpClientRequest request, Class<T> responseClass);
+    public HttpClientResponse execute(HttpClientRequest request) throws IOException;
 
 }

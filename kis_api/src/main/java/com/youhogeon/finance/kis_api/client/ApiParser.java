@@ -12,6 +12,7 @@ import com.youhogeon.finance.kis_api.api.annotation.Header;
 import com.youhogeon.finance.kis_api.api.annotation.Parameter;
 import com.youhogeon.finance.kis_api.api.annotation.URL;
 import com.youhogeon.finance.kis_api.exception.InvalidApiSpecException;
+import com.youhogeon.finance.kis_api.util.ReflectionUtil;
 
 public class ApiParser {
 
@@ -23,7 +24,7 @@ public class ApiParser {
     public ApiParser(Api<?> apiRequest) {
         this.apiRequest = apiRequest;
         this.clazz = apiRequest.getClass();
-        this.fields = clazz.getDeclaredFields();
+        this.fields = ReflectionUtil.getAllFields(clazz);
 
         this.url = clazz.getAnnotation(URL.class);
 
