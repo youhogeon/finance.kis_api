@@ -8,10 +8,10 @@ import com.youhogeon.finance.kis_api.api.annotation.URL;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
-@URL(method = Method.POST, path = "/oauth2/tokenP")
-@BodyCredentialsRequired
 @NoArgsConstructor
 @AllArgsConstructor
+@URL(method = Method.POST, path = "/oauth2/tokenP")
+@BodyCredentialsRequired
 public class GetTokenRequest implements Api<GetTokenResponse> {
 
     @Body("grant_type")

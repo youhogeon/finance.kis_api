@@ -2,11 +2,14 @@ package com.youhogeon.finance.kis_api.client;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.LinkedHashMap;
 
 import com.youhogeon.finance.kis_api.api.Api;
+import com.youhogeon.finance.kis_api.api.ApiResult;
 import com.youhogeon.finance.kis_api.api.annotation.BodyCredentialsRequired;
-import com.youhogeon.finance.kis_api.api.annotation.NoCredentialsRequired;
+import com.youhogeon.finance.kis_api.api.annotation.HeaderCredentialsRequired;
 import com.youhogeon.finance.kis_api.api.annotation.Body;
 import com.youhogeon.finance.kis_api.api.annotation.Header;
 import com.youhogeon.finance.kis_api.api.annotation.Parameter;
@@ -33,31 +36,44 @@ public class ApiParser {
         }
     }
 
-    public String getUrlPath() {
+    public ApiData parse() {
+        return ApiData.builder()
+            .method(getMethod())
+            .urlPath(getUrlPath())
+            .headers(getHeaders())
+            .parameters(getParameters())
+            .body(getBody())
+            .headerCredentialsRequired(isHeaderCredentialsRequired())
+            .bodyCredentialsRequired(isBodyCredentialsRequired())
+            .responseClass(getGenericType(apiRequest))
+            .build();
+    }
+
+    private String getUrlPath() {
         return url.path();
     }
 
-    public String getMethod() {
+    private String getMethod() {
         return url.method().name();
     }
 
-    public LinkedHashMap<String, Object> getHeaders() {
+    private LinkedHashMap<String, Object> getHeaders() {
         return getFieldsByAnnotation(Header.class);
     }
 
-    public LinkedHashMap<String, Object> getParameters() {
+    private LinkedHashMap<String, Object> getParameters() {
         return getFieldsByAnnotation(Parameter.class);
     }
 
-    public LinkedHashMap<String, Object> getBody() {
+    private LinkedHashMap<String, Object> getBody() {
         return getFieldsByAnnotation(Body.class);
     }
 
-    public boolean isNoCredentialsRequired() {
-        return clazz.isAnnotationPresent(NoCredentialsRequired.class);
+    private boolean isHeaderCredentialsRequired() {
+        return clazz.isAnnotationPresent(HeaderCredentialsRequired.class);
     }
 
-    public boolean isBodyCredentialsRequired() {
+    private boolean isBodyCredentialsRequired() {
         return clazz.isAnnotationPresent(BodyCredentialsRequired.class);
     }
 
@@ -95,6 +111,26 @@ public class ApiParser {
         }
 
         return headers;
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T extends ApiResult> Class<T> getGenericType(Api<T> api) {
+        Type generic = api.getClass().getGenericSuperclass();
+
+        if (generic == null || generic == Object.class) {
+            Type[] genericInterfaces = api.getClass().getGenericInterfaces();
+
+            if (genericInterfaces.length == 0) {
+                return null;
+            }
+
+            generic = genericInterfaces[0];
+        }
+
+        ParameterizedType parameterizedType = (ParameterizedType) generic;
+
+
+        return (Class<T>) parameterizedType.getActualTypeArguments()[0];
     }
 
 }

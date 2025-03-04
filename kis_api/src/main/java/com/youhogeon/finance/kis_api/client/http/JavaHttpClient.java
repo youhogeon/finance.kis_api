@@ -10,22 +10,18 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
-import com.youhogeon.finance.kis_api.api.ErrorResponse;
-import com.youhogeon.finance.kis_api.exception.InvalidApiRequestException;
 import com.youhogeon.finance.kis_api.util.JsonConverter;
 import com.youhogeon.finance.kis_api.util.UrlParameterConverter;
 
 public class JavaHttpClient implements com.youhogeon.finance.kis_api.client.http.HttpClient {
 
     HttpClient client;
-    String host;
 
-    public JavaHttpClient(String host) {
-        this(host, Duration.ofSeconds(10));
+    public JavaHttpClient() {
+        this(Duration.ofSeconds(10));
     }
 
-    public JavaHttpClient(String host, Duration timeout) {
-        this.host = host;
+    public JavaHttpClient(Duration timeout) {
         this.client = HttpClient
                     .newBuilder()
                     .connectTimeout(timeout)
@@ -65,7 +61,7 @@ public class JavaHttpClient implements com.youhogeon.finance.kis_api.client.http
 
     public HttpRequest.Builder getRequestBuilder(HttpClientRequest request) {
         String parameter = UrlParameterConverter.toUrlParams(request.getParameters());
-        String fullUrl = this.host + request.getUrl() + "?" + parameter;
+        String fullUrl = request.getUrl() + "?" + parameter;
 
         HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
             .uri(URI.create(fullUrl));

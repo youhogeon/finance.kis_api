@@ -8,13 +8,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import com.youhogeon.finance.kis_api.api.annotation.Header;
+import com.youhogeon.finance.kis_api.api.annotation.HeaderCredentialsRequired;
 import com.youhogeon.finance.kis_api.api.annotation.Method;
 import com.youhogeon.finance.kis_api.api.annotation.Parameter;
 
-@URL(method = Method.GET, path = "/uapi/domestic-stock/v1/quotations/inquire-price")
+
 @NoArgsConstructor
 @RequiredArgsConstructor
 @Setter
+@URL(method = Method.GET, path = "/uapi/domestic-stock/v1/quotations/inquire-price")
+@HeaderCredentialsRequired
 public class InquirePriceRequest extends CommonRequest<InquirePriceResponse> {
 
     @Header("tr_id")

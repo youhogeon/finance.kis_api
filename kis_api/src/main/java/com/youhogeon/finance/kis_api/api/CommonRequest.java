@@ -7,7 +7,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public abstract class CommonRequest<T extends ApiResponse> implements Api<T> {
+public abstract class CommonRequest<T extends ApiResult> implements Api<T> {
 
     @Header("content-type")
     private String contentType = "application/json; charset=utf-8";

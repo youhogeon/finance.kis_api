@@ -1,10 +1,14 @@
 package com.youhogeon.finance.kis_api.config;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import lombok.Getter;
 import lombok.Setter;
+
+import com.youhogeon.finance.kis_api.middleware.Middleware;
 
 /**
  * API 설정
@@ -17,6 +21,8 @@ public class Configuration {
 
     private Map<String, Credentials> credentials = new HashMap<>();
     private CredentialsSelectionStrategy credentialsSelector = new SimpleCredentialsSelector();
+
+    private List<Middleware> middlewares = new ArrayList<>();
 
     public void addCredentials(Credentials credentials) {
         String uuid = java.util.UUID.randomUUID().toString();
@@ -42,6 +48,14 @@ public class Configuration {
 
     public Credentials getCredentials(String name) {
         return credentialsSelector.getCredentials(credentials, name);
+    }
+
+    public void addMiddleWare(Middleware middleware) {
+        middlewares.add(middleware);
+    }
+
+    public List<Middleware> getAllMiddlewares() {
+        return middlewares;
     }
 
 }

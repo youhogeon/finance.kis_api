@@ -3,7 +3,7 @@ package com.youhogeon.finance.kis_api.client;
 import org.junit.jupiter.api.Test;
 
 import com.youhogeon.finance.kis_api.api.Api;
-import com.youhogeon.finance.kis_api.api.ApiResponse;
+import com.youhogeon.finance.kis_api.api.ApiResult;
 import com.youhogeon.finance.kis_api.api.annotation.Body;
 import com.youhogeon.finance.kis_api.api.annotation.BodyCredentialsRequired;
 import com.youhogeon.finance.kis_api.api.annotation.Header;
@@ -11,7 +11,7 @@ import com.youhogeon.finance.kis_api.api.annotation.Method;
 import com.youhogeon.finance.kis_api.api.annotation.Parameter;
 import com.youhogeon.finance.kis_api.api.annotation.URL;
 
-class SampleApiResponse implements ApiResponse {
+class SampleApiResponse implements ApiResult {
 
 }
 
@@ -44,24 +44,25 @@ public class ApiParserTest {
     @Test
     public void sampleApiTest() {
         ApiParser parser = new ApiParser(new SampleApi());
+        ApiData data = parser.parse();
 
-        assert(parser.getUrlPath().equals("/sample"));
-        assert(parser.getMethod().equals("POST"));
+        assert(data.getUrlPath().equals("/sample"));
+        assert(data.getMethod().equals("POST"));
 
-        assert(parser.getHeaders().size() == 2);
-        assert(parser.getHeaders().get("test-header").equals("testHeaderValue"));
-        assert(parser.getHeaders().get("test-header2").equals("testHeaderValue2"));
+        assert(data.getHeaders().size() == 2);
+        assert(data.getHeaders().get("test-header").equals("testHeaderValue"));
+        assert(data.getHeaders().get("test-header2").equals("testHeaderValue2"));
 
-        assert(parser.getParameters().size() == 2);
-        assert(parser.getParameters().get("test-param").equals("testParamValue"));
-        assert(parser.getParameters().get("test-param2").equals("testParamValue2"));
+        assert(data.getParameters().size() == 2);
+        assert(data.getParameters().get("test-param").equals("testParamValue"));
+        assert(data.getParameters().get("test-param2").equals("testParamValue2"));
 
-        assert(parser.getBody().size() == 2);
-        assert(parser.getBody().get("test-body").equals("testBodyValue"));
-        assert(parser.getBody().get("test-body2").equals("testBodyValue2"));
+        assert(data.getBody().size() == 2);
+        assert(data.getBody().get("test-body").equals("testBodyValue"));
+        assert(data.getBody().get("test-body2").equals("testBodyValue2"));
 
-        assert(parser.isBodyCredentialsRequired());
-        assert(!parser.isNoCredentialsRequired());
+        assert(data.isBodyCredentialsRequired());
+        assert(!data.isHeaderCredentialsRequired());
     }
 
 }
