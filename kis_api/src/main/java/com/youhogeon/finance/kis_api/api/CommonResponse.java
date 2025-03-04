@@ -1,7 +1,5 @@
 package com.youhogeon.finance.kis_api.api;
 
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.youhogeon.finance.kis_api.api.annotation.Header;
 
 import lombok.Getter;
@@ -9,8 +7,7 @@ import lombok.ToString;
 
 @Getter
 @ToString()
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public abstract class CommonResponse implements ApiResponse {
+public abstract class CommonResponse implements ApiResult {
 
     @Header("content-type")
     private String contentType;
