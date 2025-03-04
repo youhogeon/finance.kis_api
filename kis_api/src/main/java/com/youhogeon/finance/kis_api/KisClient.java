@@ -1,19 +1,11 @@
 package com.youhogeon.finance.kis_api;
 
 import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.youhogeon.finance.kis_api.api.Api;
 import com.youhogeon.finance.kis_api.api.ApiResult;
-import com.youhogeon.finance.kis_api.api.ErrorResponse;
 import com.youhogeon.finance.kis_api.client.ApiData;
 import com.youhogeon.finance.kis_api.client.ApiParser;
 import com.youhogeon.finance.kis_api.client.http.HttpClient;
@@ -23,6 +15,7 @@ import com.youhogeon.finance.kis_api.client.http.JavaHttpClient;
 import com.youhogeon.finance.kis_api.config.Configuration;
 import com.youhogeon.finance.kis_api.config.Credentials;
 import com.youhogeon.finance.kis_api.exception.InvalidApiRequestException;
+import com.youhogeon.finance.kis_api.exception.KisClientException;
 import com.youhogeon.finance.kis_api.middleware.AuthMiddleware;
 import com.youhogeon.finance.kis_api.middleware.Middleware;
 import com.youhogeon.finance.kis_api.middleware.ResponseHeaderMiddleware;
@@ -57,6 +50,16 @@ public class KisClient {
     }
 
     public <T extends ApiResult> T execute(Api<T> api, Credentials credentials) {
+        try {
+            return _execute(api, credentials);
+        } catch (KisClientException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new KisClientException("Unknown error occurred. (" + e.getMessage() + ")", e);
+        }
+    }
+
+    public <T extends ApiResult> T _execute(Api<T> api, Credentials credentials) {
         ApiParser parser = new ApiParser(api);
         ApiData data = parser.parse();
 
@@ -78,13 +81,11 @@ public class KisClient {
         int statusCode = response.getStatusCode();
 
         if (responseString == null) {
-            throw new InvalidApiRequestException("Failed to get response from server. (no response, status code: " + statusCode + ")");
+            throw new InvalidApiRequestException("Failed to get response from server. (no response)", statusCode);
         }
 
         if (statusCode != 200) {
-            ErrorResponse errorResponse = JsonConverter.fromJson(responseString, ErrorResponse.class);
-
-            throw new InvalidApiRequestException(errorResponse.getErrorDescription(), errorResponse.getErrorCode());
+            throw new InvalidApiRequestException(responseString, statusCode);
         }
 
         ApiResult result = JsonConverter.fromJson(responseString, data.getResponseClass());
