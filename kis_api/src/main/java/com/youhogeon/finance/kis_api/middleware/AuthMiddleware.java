@@ -13,6 +13,7 @@ import com.youhogeon.finance.kis_api.client.http.HttpClientRequest;
 import com.youhogeon.finance.kis_api.client.http.HttpClientResponse;
 import com.youhogeon.finance.kis_api.config.Credentials;
 import com.youhogeon.finance.kis_api.util.DateUtil;
+import com.youhogeon.finance.kis_api.util.MaskingHashMap;
 import com.youhogeon.finance.kis_api.util.Pair;
 
 public class AuthMiddleware implements Middleware {
@@ -22,19 +23,23 @@ public class AuthMiddleware implements Middleware {
     @Override
     public void before(KisClient client, ApiData api, HttpClientRequest request, Credentials credentials) {
         if (api.isBodyCredentialsRequired()) {
-            Map<String, Object> body = request.getBody();
+            MaskingHashMap<String, Object> body = MaskingHashMap.from(request.getBody());
 
             body.put("appkey", credentials.getAppKey());
-            body.put("appsecret", credentials.getAppSecret());
-            body.put("token", credentials.getAppToken());
+            body.putWithMasking("appsecret", credentials.getAppSecret());
+            body.putWithMasking("token", credentials.getAppToken());
+
+            request.setBody(body);
         }
 
         if (api.isHeaderCredentialsRequired()) {
-            Map<String, Object> headers = request.getHeaders();
+            MaskingHashMap<String, Object> headers = MaskingHashMap.from(request.getHeaders());
 
             headers.put("appKey", credentials.getAppKey());
-            headers.put("appSecret", credentials.getAppSecret());
-            headers.put("authorization", "Bearer " + getAppToken(client, credentials));
+            headers.putWithMasking("appSecret", credentials.getAppSecret());
+            headers.putWithMasking("authorization", "Bearer " + getAppToken(client, credentials));
+
+            request.setHeaders(headers);
         }
     }
 
