@@ -7,12 +7,11 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.youhogeon.finance.kis_api.KisClient;
-import com.youhogeon.finance.kis_api.api.ApiResult;
 import com.youhogeon.finance.kis_api.api.GetTokenRequest;
 import com.youhogeon.finance.kis_api.api.GetTokenResponse;
 import com.youhogeon.finance.kis_api.client.http.HttpClientRequest;
-import com.youhogeon.finance.kis_api.client.http.HttpClientResponse;
 import com.youhogeon.finance.kis_api.config.Credentials;
+import com.youhogeon.finance.kis_api.context.ApiContext;
 import com.youhogeon.finance.kis_api.context.ApiData;
 import com.youhogeon.finance.kis_api.util.CredentialsUtil;
 import com.youhogeon.finance.kis_api.util.DateUtil;
@@ -24,12 +23,16 @@ public class AuthMiddleware implements Middleware {
     private final ConcurrentMap<Credentials, ReentrantLock> locks = new ConcurrentHashMap<>();
 
     @Override
-    public void before(KisClient client, ApiData api, HttpClientRequest request, Credentials credentials) {
+    public void before(KisClient client, ApiContext context) {
+        ApiData apiData = context.getApiData();
+        HttpClientRequest request = context.getRequest();
+        Credentials credentials = client.getConfig().getCredentials();
+
         boolean maskCredentials = client.getConfig().isMaskCredentials();
 
         String[] maskingKeys = new String[] { "appkey", "appsecret", "authorization" };
 
-        if (api.isBodyCredentialsRequired()) {
+        if (apiData.isBodyCredentialsRequired()) {
             Map<String, Object> body = request.getBody();
 
             body.put("appkey", credentials.getAppKey());
@@ -41,7 +44,7 @@ public class AuthMiddleware implements Middleware {
             }
         }
 
-        if (api.isHeaderCredentialsRequired()) {
+        if (apiData.isHeaderCredentialsRequired()) {
             Map<String, Object> headers = request.getHeaders();
             String appToken = getAppToken(client, credentials);
 
@@ -56,7 +59,7 @@ public class AuthMiddleware implements Middleware {
     }
 
     @Override
-    public void after(KisClient client, ApiData api, HttpClientResponse response, ApiResult result, Credentials credentials) {
+    public void after(KisClient client, ApiContext context) {
 
     }
 
@@ -95,8 +98,10 @@ public class AuthMiddleware implements Middleware {
             }
 
             // fetch token
+            ApiContext authContext = new ApiContext(credentials);
+
             GetTokenRequest req = new GetTokenRequest();
-            GetTokenResponse resp = client.execute(req, credentials);
+            GetTokenResponse resp = client.execute(req, authContext);
 
             // save token to cache
             LocalDateTime expiredAt = DateUtil.toLocalDateTime(resp.getAccessTokenTokenExpired());

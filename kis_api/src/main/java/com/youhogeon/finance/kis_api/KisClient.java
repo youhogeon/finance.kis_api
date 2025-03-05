@@ -16,6 +16,7 @@ import com.youhogeon.finance.kis_api.client.http.HttpClientResponse;
 import com.youhogeon.finance.kis_api.client.http.JavaHttpClient;
 import com.youhogeon.finance.kis_api.config.Configuration;
 import com.youhogeon.finance.kis_api.config.Credentials;
+import com.youhogeon.finance.kis_api.context.ApiContext;
 import com.youhogeon.finance.kis_api.context.ApiData;
 import com.youhogeon.finance.kis_api.exception.InvalidApiRequestException;
 import com.youhogeon.finance.kis_api.exception.KisClientException;
@@ -61,21 +62,23 @@ public class KisClient {
 
     public <T extends ApiResult> T execute(Api<T> api) {
         Credentials credentials = config.getCredentials();
+        ApiContext context = new ApiContext(credentials);
 
-        return execute(api, credentials);
+        return execute(api, context);
     }
 
     public <T extends ApiResult> T execute(Api<T> api, String credentialsName) {
         Credentials credentials = config.getCredentials(credentialsName);
+        ApiContext context = new ApiContext(credentials);
 
-        return execute(api, credentials);
+        return execute(api, context);
     }
 
-    public <T extends ApiResult> T execute(Api<T> api, Credentials credentials) {
+    public <T extends ApiResult> T execute(Api<T> api, ApiContext context) {
         logger.debug("API Request begins [{}]", api.getClass().getSimpleName());
 
         try {
-            return _execute(api, credentials);
+            return _execute(api, context);
         } catch (KisClientException e) {
             logger.error("API Request failed [{}] {}", api.getClass().getSimpleName(), e.getMessage());
 
@@ -91,14 +94,17 @@ public class KisClient {
         // nothing to do for now
     }
 
-    private <T extends ApiResult> T _execute(Api<T> api, Credentials credentials) {
+    private <T extends ApiResult> T _execute(Api<T> api, ApiContext context) {
         ApiParser parser = new ApiParser(api);
         ApiData data = parser.parse();
 
         HttpClientRequest request = HttpClientRequest.from(config.getApiHost(), data);
 
+        context.setApiData(data);
+        context.setRequest(request);
+
         for (Middleware middleware : middlewares) {
-            middleware.before(this, data, request, credentials);
+            middleware.before(this, context);
         }
 
         HttpClientResponse response = null;
@@ -130,8 +136,11 @@ public class KisClient {
 
         ApiResult result = JsonConverter.fromJson(responseString, data.getResponseClass());
 
+        context.setResponse(response);
+        context.setApiResult(result);
+
         for (Middleware middleware : middlewares) {
-            middleware.after(this, data, response, result, credentials);
+            middleware.after(this, context);
         }
 
         @SuppressWarnings("unchecked")

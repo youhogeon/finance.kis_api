@@ -4,11 +4,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import com.youhogeon.finance.kis_api.KisClient;
-import com.youhogeon.finance.kis_api.api.ApiResult;
-import com.youhogeon.finance.kis_api.client.http.HttpClientRequest;
-import com.youhogeon.finance.kis_api.client.http.HttpClientResponse;
 import com.youhogeon.finance.kis_api.config.Credentials;
-import com.youhogeon.finance.kis_api.context.ApiData;
+import com.youhogeon.finance.kis_api.context.ApiContext;
 import com.youhogeon.finance.kis_api.util.RateLimiter;
 
 public class RateLimitingMiddleware implements Middleware {
@@ -16,7 +13,9 @@ public class RateLimitingMiddleware implements Middleware {
     private final ConcurrentMap<Credentials, RateLimiter> rateLimiters = new ConcurrentHashMap<>();
 
     @Override
-    public void before(KisClient client, ApiData api, HttpClientRequest request, Credentials credentials) {
+    public void before(KisClient client, ApiContext context) {
+        Credentials credentials = context.getCredentials();
+
         int limit = credentials.getRestLimitPerSecond();
         rateLimiters.computeIfAbsent(credentials, key -> new RateLimiter(limit));
 
@@ -26,7 +25,7 @@ public class RateLimitingMiddleware implements Middleware {
     }
 
     @Override
-    public void after(KisClient client, ApiData api, HttpClientResponse response, ApiResult result, Credentials credentials) {
+    public void after(KisClient client, ApiContext context) {
 
     }
 
