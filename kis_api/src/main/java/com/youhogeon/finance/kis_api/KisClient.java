@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.youhogeon.finance.kis_api.api.Api;
 import com.youhogeon.finance.kis_api.api.ApiResult;
 import com.youhogeon.finance.kis_api.client.ApiData;
@@ -24,17 +27,22 @@ import com.youhogeon.finance.kis_api.util.JsonConverter;
 public class KisClient {
 
     private Configuration config;
-    private HttpClient httpClient;
+    private HttpClient httpClient = new JavaHttpClient();;
 
     private List<Middleware> middlewares = new ArrayList<>();
 
+    private static final Logger logger = LoggerFactory.getLogger(KisClient.class);
+
     public KisClient(Configuration config) {
+        logger.info("{} initializing...", this.getClass().getSimpleName());
+
         this.config = config;
-        this.httpClient = new JavaHttpClient();
 
         middlewares.add(new AuthMiddleware());
         middlewares.add(new ResponseHeaderMiddleware());
         middlewares.addAll(config.getAllMiddlewares());
+
+        logger.info("{} initialized successfully.", this.getClass().getSimpleName());
     }
 
     public <T extends ApiResult> T execute(Api<T> api) {
@@ -50,16 +58,26 @@ public class KisClient {
     }
 
     public <T extends ApiResult> T execute(Api<T> api, Credentials credentials) {
+        logger.debug("API Request begin [{}]", api.getClass().getSimpleName());
+
         try {
             return _execute(api, credentials);
         } catch (KisClientException e) {
+            logger.error("API Request failed [{}] {}", api.getClass().getSimpleName(), e.getMessage());
+
             throw e;
         } catch (Exception e) {
-            throw new KisClientException("Unknown error occurred. (" + e.getMessage() + ")", e);
+            logger.error("API Request failed (Unknown Error) [{}] {}", api.getClass().getSimpleName(), e.getMessage());
+
+            throw new KisClientException("Unknown error occurred.", e);
         }
     }
 
-    public <T extends ApiResult> T _execute(Api<T> api, Credentials credentials) {
+    public void close() {
+        // nothing to do for now
+    }
+
+    private <T extends ApiResult> T _execute(Api<T> api, Credentials credentials) {
         ApiParser parser = new ApiParser(api);
         ApiData data = parser.parse();
 
@@ -74,17 +92,21 @@ public class KisClient {
         try {
             response = this.httpClient.execute(request);
         } catch (IOException e) {
-            throw new InvalidApiRequestException("Failed to get response from server. (Exception: " + e.getMessage() + ")");
+            throw new InvalidApiRequestException("Failed to get response from server. (" + e.getMessage() + ")");
         }
 
         String responseString = response.getBody();
         int statusCode = response.getStatusCode();
+
+        logger.debug("API Request [{}] {} -> ({}) {}", api.getClass().getSimpleName(), request, statusCode, responseString);
 
         if (responseString == null) {
             throw new InvalidApiRequestException("Failed to get response from server. (no response)", statusCode);
         }
 
         if (statusCode != 200) {
+            logger.error("API Response Error [{}] : Unexpected status code {}. {} -> {}", api.getClass().getSimpleName(), statusCode, request, responseString);
+
             throw new InvalidApiRequestException(responseString, statusCode);
         }
 
