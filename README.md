@@ -33,11 +33,10 @@ config.addCredentials(c2);
 // config.addCredentials("secondAccount", c2);
 
 // 다중 계좌인 경우, 호출시 이름을 지정하지 않았을 때 CredentialsSelector 에 의해 Credentials가 자동 선택됨.
-// 아래와 같이 사용할 CredentialsSelector 지정 가능 (Strategy Pattern)
+// 아래와 같이 사용할 CredentialsSelector 지정 가능. CredentialsSelector를 구현하는 custom 구현체를 작성하여 추가 가능
 // 
 // config.setCredentialsSelector(new SimpleCredentialsSelector()); // 1 (기본값)
 // config.setCredentialsSelector(new RoundRobinCredentialsSelector()); // 또는 2
-// config.setCredentialsSelector(new RateControlCredentialsSelector()); // 또는 3
 
 KisClient client = new KisClient(config);
 ```
