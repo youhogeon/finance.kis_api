@@ -21,6 +21,7 @@ import com.youhogeon.finance.kis_api.exception.InvalidApiRequestException;
 import com.youhogeon.finance.kis_api.exception.KisClientException;
 import com.youhogeon.finance.kis_api.middleware.AuthMiddleware;
 import com.youhogeon.finance.kis_api.middleware.Middleware;
+import com.youhogeon.finance.kis_api.middleware.RateLimitingMiddleware;
 import com.youhogeon.finance.kis_api.middleware.ResponseHeaderMiddleware;
 import com.youhogeon.finance.kis_api.util.CredentialsUtil;
 import com.youhogeon.finance.kis_api.util.JsonConverter;
@@ -44,6 +45,7 @@ public class KisClient {
 
         middlewares.add(new AuthMiddleware());
         middlewares.add(new ResponseHeaderMiddleware());
+        middlewares.add(new RateLimitingMiddleware());
         middlewares.addAll(config.getAllMiddlewares());
 
         logger.info("{} initialized successfully.", this.getClass().getSimpleName());
