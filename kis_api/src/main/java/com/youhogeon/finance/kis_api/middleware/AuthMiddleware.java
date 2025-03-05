@@ -1,7 +1,6 @@
 package com.youhogeon.finance.kis_api.middleware;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -15,8 +14,8 @@ import com.youhogeon.finance.kis_api.client.ApiData;
 import com.youhogeon.finance.kis_api.client.http.HttpClientRequest;
 import com.youhogeon.finance.kis_api.client.http.HttpClientResponse;
 import com.youhogeon.finance.kis_api.config.Credentials;
+import com.youhogeon.finance.kis_api.util.CredentialsUtil;
 import com.youhogeon.finance.kis_api.util.DateUtil;
-import com.youhogeon.finance.kis_api.util.MaskingHashMap;
 import com.youhogeon.finance.kis_api.util.Pair;
 
 public class AuthMiddleware implements Middleware {
@@ -26,24 +25,33 @@ public class AuthMiddleware implements Middleware {
 
     @Override
     public void before(KisClient client, ApiData api, HttpClientRequest request, Credentials credentials) {
+        boolean maskCredentials = client.getConfig().isMaskCredentials();
+
+        String[] maskingKeys = new String[] { "appkey", "appsecret", "authorization" };
+
         if (api.isBodyCredentialsRequired()) {
-            MaskingHashMap<String, Object> body = MaskingHashMap.from(request.getBody());
+            Map<String, Object> body = request.getBody();
 
             body.put("appkey", credentials.getAppKey());
-            body.putWithMasking("appsecret", credentials.getAppSecret());
-            // body.putWithMasking("token", credentials.getAppToken()); // not required for now
+            body.put("appsecret", credentials.getAppSecret());
+            // body.put("token", credentials.getAppToken()); // not required for now
 
-            request.setBody(body);
+            if (maskCredentials) {
+                request.setBody(CredentialsUtil.maskMap(body, maskingKeys));
+            }
         }
 
         if (api.isHeaderCredentialsRequired()) {
-            MaskingHashMap<String, Object> headers = MaskingHashMap.from(request.getHeaders());
+            Map<String, Object> headers = request.getHeaders();
+            String appToken = getAppToken(client, credentials);
 
-            headers.put("appKey", credentials.getAppKey());
-            headers.putWithMasking("appSecret", credentials.getAppSecret());
-            headers.putWithMasking("authorization", "Bearer " + getAppToken(client, credentials));
+            headers.put("appkey", credentials.getAppKey());
+            headers.put("appsecret", credentials.getAppSecret());
+            headers.put("authorization", "Bearer " + appToken);
 
-            request.setHeaders(headers);
+            if (maskCredentials) {
+                request.setHeaders(CredentialsUtil.maskMap(headers, maskingKeys));
+            }
         }
     }
 

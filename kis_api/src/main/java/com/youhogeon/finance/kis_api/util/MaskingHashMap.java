@@ -3,9 +3,14 @@ package com.youhogeon.finance.kis_api.util;
 import java.util.HashMap;
 import java.util.Map;
 
+import lombok.Setter;
+
 public class MaskingHashMap<K, V> extends HashMap<K, V> {
-    
+
     private Map<K, Object> maskedMap = new HashMap<>();
+
+    @Setter
+    private String maskString = "?";
 
     public V put(K key, V value) {
         maskedMap.put(key, value);
@@ -14,9 +19,17 @@ public class MaskingHashMap<K, V> extends HashMap<K, V> {
     }
 
     public V putWithMasking(K key, V value) {
-        maskedMap.put(key, "***");
+        maskedMap.put(key, maskString);
 
         return super.put(key, value);
+    }
+
+    public void mask(K key) {
+        if (!containsKey(key)) {
+            return;
+        }
+
+        maskedMap.put(key, maskString);
     }
 
     public String toString() {

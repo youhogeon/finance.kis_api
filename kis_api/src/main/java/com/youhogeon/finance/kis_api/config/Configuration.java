@@ -15,9 +15,19 @@ import com.youhogeon.finance.kis_api.middleware.Middleware;
  */
 public class Configuration {
 
+    /**
+     * API 호스트 주소
+     */
     @Getter
     @Setter
     private String apiHost = "https://openapi.koreainvestment.com:9443";
+
+    /**
+     * 로깅 시 credential 정보를 마스킹할지 여부
+     */
+    @Getter
+    @Setter
+    private boolean maskCredentials = true;
 
     private Map<String, Credentials> credentials = new HashMap<>();
     private CredentialsSelectionStrategy credentialsSelector = new SimpleCredentialsSelector();

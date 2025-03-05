@@ -22,13 +22,17 @@ import com.youhogeon.finance.kis_api.exception.KisClientException;
 import com.youhogeon.finance.kis_api.middleware.AuthMiddleware;
 import com.youhogeon.finance.kis_api.middleware.Middleware;
 import com.youhogeon.finance.kis_api.middleware.ResponseHeaderMiddleware;
+import com.youhogeon.finance.kis_api.util.CredentialsUtil;
 import com.youhogeon.finance.kis_api.util.JsonConverter;
+
+import lombok.Getter;
 
 public class KisClient {
 
+    @Getter
     private Configuration config;
-    private HttpClient httpClient = new JavaHttpClient();;
 
+    private HttpClient httpClient = new JavaHttpClient();;
     private List<Middleware> middlewares = new ArrayList<>();
 
     private static final Logger logger = LoggerFactory.getLogger(KisClient.class);
@@ -36,13 +40,21 @@ public class KisClient {
     public KisClient(Configuration config) {
         logger.info("{} initializing...", this.getClass().getSimpleName());
 
-        this.config = config;
+        setConfig(config);
 
         middlewares.add(new AuthMiddleware());
         middlewares.add(new ResponseHeaderMiddleware());
         middlewares.addAll(config.getAllMiddlewares());
 
         logger.info("{} initialized successfully.", this.getClass().getSimpleName());
+    }
+
+    private void setConfig(Configuration config) {
+        if (!config.isMaskCredentials()) {
+            logger.warn("Credential masking is disabled. Be careful not to expose your credentials in logs.");
+        }
+
+        this.config = config;
     }
 
     public <T extends ApiResult> T execute(Api<T> api) {
@@ -58,7 +70,7 @@ public class KisClient {
     }
 
     public <T extends ApiResult> T execute(Api<T> api, Credentials credentials) {
-        logger.debug("API Request begin [{}]", api.getClass().getSimpleName());
+        logger.debug("API Request begins [{}]", api.getClass().getSimpleName());
 
         try {
             return _execute(api, credentials);
@@ -98,7 +110,11 @@ public class KisClient {
         String responseString = response.getBody();
         int statusCode = response.getStatusCode();
 
-        logger.debug("API Request [{}] {} -> ({}) {}", api.getClass().getSimpleName(), request, statusCode, responseString);
+        if (logger.isDebugEnabled()) {
+            String maskedResponseString = config.isMaskCredentials() ? CredentialsUtil.maskAccessToken(responseString) : responseString;
+
+            logger.debug("API Request ends. [{}] {} -> ({}) {}", api.getClass().getSimpleName(), request, statusCode, maskedResponseString);
+        }
 
         if (responseString == null) {
             throw new InvalidApiRequestException("Failed to get response from server. (no response)", statusCode);
