@@ -5,10 +5,10 @@ import java.util.concurrent.ConcurrentMap;
 
 import com.youhogeon.finance.kis_api.KisClient;
 import com.youhogeon.finance.kis_api.api.ApiResult;
-import com.youhogeon.finance.kis_api.client.ApiData;
 import com.youhogeon.finance.kis_api.client.http.HttpClientRequest;
 import com.youhogeon.finance.kis_api.client.http.HttpClientResponse;
 import com.youhogeon.finance.kis_api.config.Credentials;
+import com.youhogeon.finance.kis_api.context.ApiData;
 import com.youhogeon.finance.kis_api.util.RateLimiter;
 
 public class RateLimitingMiddleware implements Middleware {

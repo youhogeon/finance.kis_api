@@ -2,7 +2,7 @@ package com.youhogeon.finance.kis_api.client.http;
 
 import java.util.Map;
 
-import com.youhogeon.finance.kis_api.client.ApiData;
+import com.youhogeon.finance.kis_api.context.ApiData;
 
 import lombok.Builder;
 import lombok.Data;

@@ -9,7 +9,7 @@ import java.util.Map;
 import com.youhogeon.finance.kis_api.KisClient;
 import com.youhogeon.finance.kis_api.api.ApiResult;
 import com.youhogeon.finance.kis_api.api.annotation.Header;
-import com.youhogeon.finance.kis_api.client.ApiData;
+import com.youhogeon.finance.kis_api.context.ApiData;
 import com.youhogeon.finance.kis_api.client.http.HttpClientRequest;
 import com.youhogeon.finance.kis_api.client.http.HttpClientResponse;
 import com.youhogeon.finance.kis_api.config.Credentials;

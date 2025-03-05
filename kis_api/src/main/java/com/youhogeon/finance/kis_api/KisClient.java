@@ -8,15 +8,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.youhogeon.finance.kis_api.api.Api;
+import com.youhogeon.finance.kis_api.api.ApiParser;
 import com.youhogeon.finance.kis_api.api.ApiResult;
-import com.youhogeon.finance.kis_api.client.ApiData;
-import com.youhogeon.finance.kis_api.client.ApiParser;
 import com.youhogeon.finance.kis_api.client.http.HttpClient;
 import com.youhogeon.finance.kis_api.client.http.HttpClientRequest;
 import com.youhogeon.finance.kis_api.client.http.HttpClientResponse;
 import com.youhogeon.finance.kis_api.client.http.JavaHttpClient;
 import com.youhogeon.finance.kis_api.config.Configuration;
 import com.youhogeon.finance.kis_api.config.Credentials;
+import com.youhogeon.finance.kis_api.context.ApiData;
 import com.youhogeon.finance.kis_api.exception.InvalidApiRequestException;
 import com.youhogeon.finance.kis_api.exception.KisClientException;
 import com.youhogeon.finance.kis_api.middleware.AuthMiddleware;
@@ -33,7 +33,7 @@ public class KisClient {
     @Getter
     private Configuration config;
 
-    private HttpClient httpClient = new JavaHttpClient();;
+    private HttpClient httpClient = new JavaHttpClient();
     private List<Middleware> middlewares = new ArrayList<>();
 
     private static final Logger logger = LoggerFactory.getLogger(KisClient.class);

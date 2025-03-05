@@ -1,4 +1,4 @@
-package com.youhogeon.finance.kis_api.client;
+package com.youhogeon.finance.kis_api.api;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -6,14 +6,13 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.LinkedHashMap;
 
-import com.youhogeon.finance.kis_api.api.Api;
-import com.youhogeon.finance.kis_api.api.ApiResult;
 import com.youhogeon.finance.kis_api.api.annotation.BodyCredentialsRequired;
 import com.youhogeon.finance.kis_api.api.annotation.HeaderCredentialsRequired;
 import com.youhogeon.finance.kis_api.api.annotation.Body;
 import com.youhogeon.finance.kis_api.api.annotation.Header;
 import com.youhogeon.finance.kis_api.api.annotation.Parameter;
 import com.youhogeon.finance.kis_api.api.annotation.URL;
+import com.youhogeon.finance.kis_api.context.ApiData;
 import com.youhogeon.finance.kis_api.exception.InvalidApiSpecException;
 import com.youhogeon.finance.kis_api.util.ReflectionUtil;
 
