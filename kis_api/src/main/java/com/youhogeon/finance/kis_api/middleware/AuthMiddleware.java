@@ -3,6 +3,9 @@ package com.youhogeon.finance.kis_api.middleware;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 import com.youhogeon.finance.kis_api.KisClient;
 import com.youhogeon.finance.kis_api.api.ApiResult;
@@ -18,7 +21,8 @@ import com.youhogeon.finance.kis_api.util.Pair;
 
 public class AuthMiddleware implements Middleware {
 
-    private Map<Credentials, Pair<String, LocalDateTime>> appTokens = new HashMap<>();
+    private final ConcurrentMap<Credentials, Pair<String, LocalDateTime>> appTokens = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Credentials, ReentrantLock> locks = new ConcurrentHashMap<>();
 
     @Override
     public void before(KisClient client, ApiData api, HttpClientRequest request, Credentials credentials) {
@@ -27,7 +31,7 @@ public class AuthMiddleware implements Middleware {
 
             body.put("appkey", credentials.getAppKey());
             body.putWithMasking("appsecret", credentials.getAppSecret());
-            body.putWithMasking("token", credentials.getAppToken());
+            // body.putWithMasking("token", credentials.getAppToken()); // not required for now
 
             request.setBody(body);
         }
@@ -48,31 +52,52 @@ public class AuthMiddleware implements Middleware {
 
     }
 
+    private String getAppTokenFromCache(Credentials credentials) {
+        Pair<String, LocalDateTime> tokenInfo = appTokens.get(credentials);
+
+        if (tokenInfo == null) {
+            return null;
+        }
+
+        LocalDateTime accessTokenExpired = tokenInfo.getSecond();
+
+        if (accessTokenExpired.isAfter(LocalDateTime.now().minusMinutes(1))) {
+            return tokenInfo.getFirst();
+        }
+
+        return null;
+    }
+
     private String getAppToken(KisClient client, Credentials credentials) {
         if (credentials.getAppToken() != null) {
             return credentials.getAppToken();
         }
 
-        if (appTokens.containsKey(credentials)) {
-            Pair<String, LocalDateTime> tokenInfo = appTokens.get(credentials);
-
-            LocalDateTime accessTokenExpired = tokenInfo.getSecond();
-
-            if (accessTokenExpired.isAfter(LocalDateTime.now().minusMinutes(1))) {
-                return tokenInfo.getFirst();
-            }
+        String cachedToken = getAppTokenFromCache(credentials);
+        if (cachedToken != null) {
+            return cachedToken;
         }
 
-        GetTokenRequest req = new GetTokenRequest();
-        GetTokenResponse resp = client.execute(req, credentials);
+        ReentrantLock lock = locks.computeIfAbsent(credentials, k -> new ReentrantLock());
 
-        LocalDateTime expiredAt = DateUtil.toLocalDateTime(resp.getAccessTokenTokenExpired());
+        synchronized (lock) {
+            cachedToken = getAppTokenFromCache(credentials);
+            if (cachedToken != null) {
+                return cachedToken;
+            }
 
-        Pair<String, LocalDateTime> tokenInfo = new Pair<>(resp.getAccessToken(), expiredAt);
+            // fetch token
+            GetTokenRequest req = new GetTokenRequest();
+            GetTokenResponse resp = client.execute(req, credentials);
 
-        appTokens.put(credentials, tokenInfo);
+            // save token to cache
+            LocalDateTime expiredAt = DateUtil.toLocalDateTime(resp.getAccessTokenTokenExpired());
+            Pair<String, LocalDateTime> tokenInfo = new Pair<>(resp.getAccessToken(), expiredAt);
+            appTokens.put(credentials, tokenInfo);
 
-        return resp.getAccessToken();
+            return resp.getAccessToken();
+        }
+
     }
 
 }
