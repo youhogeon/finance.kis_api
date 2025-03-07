@@ -12,6 +12,7 @@ public class Credentials {
     private String appSecret;
 
     private String appToken;
+    private String approvalKey;
 
     /**
      * 초당 허용 요청 수 (한국투자증권에서 제공하는 유량)
@@ -21,20 +22,15 @@ public class Credentials {
     private int restLimitPerSecond = 19;
 
     /**
-     * 초당 소캣 허용 요청 수 (한국투자증권에서 제공하는 유량)
+     * 소캣 허용 수신 수 (한국투자증권에서 제공하는 유량)
      *
-     * 한국투자증권에서 제공하는 유량은 41 연결로 제한되어 있으나, 네트워크 레이턴시를 고려해 40을 기본값으로 함
+     * 한국투자증권에서 제공하는 유량은 41 연결로 제한되어 있음
      */
-    private int socketLimitPerSecond = 40;
+    private int socketLimitPerSecond = 41;
 
     public Credentials(String apiKey, String apiSecret) {
-        this(apiKey, apiSecret, null);
-    }
-
-    public Credentials(String apiKey, String apiSecret, String apiToken) {
         this.appKey = apiKey;
         this.appSecret = apiSecret;
-        this.appToken = apiToken;
     }
 
     public boolean equals(Object obj) {

@@ -2,7 +2,9 @@ package com.youhogeon.finance.kis_api.util;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ReflectionUtil {
@@ -39,6 +41,47 @@ public class ReflectionUtil {
         }
 
         return annotatedFields;
+    }
+
+    public static boolean compareAnnotation(Annotation annotation, Class<? extends Annotation> annotationClass, Object... expectedValues) {
+        if (annotation == null) {
+            return false;
+        }
+
+        if (annotation.annotationType() != annotationClass) {
+            return false;
+        }
+
+        try {
+            Method[] methods = annotationClass.getDeclaredMethods();
+            if (methods.length != expectedValues.length) {
+                return false;
+            }
+
+            for (int i = 0; i < methods.length; i++) {
+                Method method = methods[i];
+
+                if (method.getParameterCount() != 0) {
+                    return false; // ApiData는 파라미터 있는 메서드 불허
+                }
+
+                Object actualValue = method.invoke(annotation);
+
+                if (actualValue instanceof Object[] && expectedValues[i] instanceof Object[]) {
+                    if (!Arrays.equals((Object[]) actualValue, (Object[]) expectedValues[i])) {
+                        return false;
+                    }
+                } else {
+                    if (!actualValue.equals(expectedValues[i])) {
+                        return false;
+                    }
+                }
+            }
+        } catch (Exception e) {
+
+        }
+
+        return true;
     }
 
 }

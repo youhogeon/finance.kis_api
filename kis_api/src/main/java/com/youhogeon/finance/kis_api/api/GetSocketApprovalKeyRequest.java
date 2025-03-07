@@ -9,9 +9,9 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 @AllArgsConstructor
-@RestApi(method = RestApi.Method.POST, path = "/oauth2/tokenP")
+@RestApi(method = RestApi.Method.POST, path = "/oauth2/Approval")
 @BodyCredentialsRequired
-public class GetTokenRequest implements Api<GetTokenResponse> {
+public class GetSocketApprovalKeyRequest implements Api<GetSocketApprovalKeyResponse> {
 
     @Body("grant_type")
     private String grantType = "client_credentials";

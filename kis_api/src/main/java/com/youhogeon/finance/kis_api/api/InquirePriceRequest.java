@@ -1,6 +1,6 @@
 package com.youhogeon.finance.kis_api.api;
 
-import com.youhogeon.finance.kis_api.api.annotation.URL;
+import com.youhogeon.finance.kis_api.api.annotation.RestApi;
 
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -9,14 +9,13 @@ import lombok.Setter;
 
 import com.youhogeon.finance.kis_api.api.annotation.Header;
 import com.youhogeon.finance.kis_api.api.annotation.HeaderCredentialsRequired;
-import com.youhogeon.finance.kis_api.api.annotation.Method;
 import com.youhogeon.finance.kis_api.api.annotation.Parameter;
 
 
 @NoArgsConstructor
 @RequiredArgsConstructor
 @Setter
-@URL(method = Method.GET, path = "/uapi/domestic-stock/v1/quotations/inquire-price")
+@RestApi(method = RestApi.Method.GET, path = "/uapi/domestic-stock/v1/quotations/inquire-price")
 @HeaderCredentialsRequired
 public class InquirePriceRequest extends CommonRequest<InquirePriceResponse> {
 

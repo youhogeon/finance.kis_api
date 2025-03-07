@@ -10,10 +10,14 @@ import org.slf4j.LoggerFactory;
 import com.youhogeon.finance.kis_api.api.Api;
 import com.youhogeon.finance.kis_api.api.ApiParser;
 import com.youhogeon.finance.kis_api.api.ApiResult;
+import com.youhogeon.finance.kis_api.client.NetworkClient;
+import com.youhogeon.finance.kis_api.client.NetworkRequest;
+import com.youhogeon.finance.kis_api.client.NetworkResponse;
 import com.youhogeon.finance.kis_api.client.http.HttpClient;
 import com.youhogeon.finance.kis_api.client.http.HttpClientRequest;
 import com.youhogeon.finance.kis_api.client.http.HttpClientResponse;
 import com.youhogeon.finance.kis_api.client.http.JavaHttpClient;
+import com.youhogeon.finance.kis_api.client.socket.JsrSocketClient;
 import com.youhogeon.finance.kis_api.config.Configuration;
 import com.youhogeon.finance.kis_api.config.Credentials;
 import com.youhogeon.finance.kis_api.context.ApiContext;
@@ -24,7 +28,6 @@ import com.youhogeon.finance.kis_api.middleware.AuthMiddleware;
 import com.youhogeon.finance.kis_api.middleware.Middleware;
 import com.youhogeon.finance.kis_api.middleware.RateLimitingMiddleware;
 import com.youhogeon.finance.kis_api.middleware.ResponseHeaderMiddleware;
-import com.youhogeon.finance.kis_api.util.CredentialsUtil;
 import com.youhogeon.finance.kis_api.util.JsonConverter;
 
 import lombok.Getter;
@@ -34,8 +37,9 @@ public class KisClient {
     @Getter
     private Configuration config;
 
-    private HttpClient httpClient = new JavaHttpClient();
     private List<Middleware> middlewares = new ArrayList<>();
+
+    NetworkClient[] clients;
 
     private static final Logger logger = LoggerFactory.getLogger(KisClient.class);
 
@@ -48,6 +52,11 @@ public class KisClient {
         middlewares.add(new ResponseHeaderMiddleware());
         middlewares.add(new RateLimitingMiddleware());
         middlewares.addAll(config.getAllMiddlewares());
+
+        clients = new NetworkClient[] {
+            new JavaHttpClient(config),
+            new JsrSocketClient(config)
+        };
 
         logger.info("{} initialized successfully.", this.getClass().getSimpleName());
     }
@@ -91,48 +100,48 @@ public class KisClient {
     }
 
     public void close() {
-        // nothing to do for now
+        for (NetworkClient client : clients) {
+            try {
+                client.close();
+            } catch (IOException e) {
+                logger.error("Failed to close client. {}", e.getMessage());
+            }
+        }
+    }
+
+    private NetworkClient getClient(ApiData data) {
+        for (NetworkClient client : clients) {
+            if (client.isSupport(data)) {
+                return client;
+            }
+        }
+
+        throw new InvalidApiRequestException("No client supports the request.");
     }
 
     private <T extends ApiResult> T _execute(Api<T> api, ApiContext context) {
         ApiParser parser = new ApiParser(api);
         ApiData data = parser.parse();
 
-        HttpClientRequest request = HttpClientRequest.from(config.getApiHost(), data);
-
         context.setApiData(data);
+
+        NetworkClient client = getClient(data);
+        NetworkRequest request = client.makeRequest(data);
+
         context.setRequest(request);
 
         for (Middleware middleware : middlewares) {
             middleware.before(this, context);
         }
 
-        HttpClientResponse response = null;
-
         try {
-            response = this.httpClient.execute(request);
+            client.execute(context);
         } catch (IOException e) {
             throw new InvalidApiRequestException("Failed to get response from server. (" + e.getMessage() + ")");
         }
 
+        NetworkResponse response = context.getResponse();
         String responseString = response.getBody();
-        int statusCode = response.getStatusCode();
-
-        if (logger.isDebugEnabled()) {
-            String maskedResponseString = config.isMaskCredentials() ? CredentialsUtil.maskAccessToken(responseString) : responseString;
-
-            logger.debug("API Request ends. [{}] {} -> ({}) {}", api.getClass().getSimpleName(), request, statusCode, maskedResponseString);
-        }
-
-        if (responseString == null) {
-            throw new InvalidApiRequestException("Failed to get response from server. (no response)", statusCode);
-        }
-
-        if (statusCode != 200) {
-            logger.error("API Response Error [{}] : Unexpected status code {}. {} -> {}", api.getClass().getSimpleName(), statusCode, request, responseString);
-
-            throw new InvalidApiRequestException(responseString, statusCode);
-        }
 
         ApiResult result = JsonConverter.fromJson(responseString, data.getResponseClass());
 

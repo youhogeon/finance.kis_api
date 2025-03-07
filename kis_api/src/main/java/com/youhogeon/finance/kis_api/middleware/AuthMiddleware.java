@@ -7,9 +7,12 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.youhogeon.finance.kis_api.KisClient;
+import com.youhogeon.finance.kis_api.api.annotation.BodyCredentialsRequired;
+import com.youhogeon.finance.kis_api.api.annotation.HeaderCredentialsRequired;
 import com.youhogeon.finance.kis_api.api.GetTokenRequest;
 import com.youhogeon.finance.kis_api.api.GetTokenResponse;
-import com.youhogeon.finance.kis_api.client.http.HttpClientRequest;
+import com.youhogeon.finance.kis_api.client.NetworkRequest;
+import com.youhogeon.finance.kis_api.config.Configuration;
 import com.youhogeon.finance.kis_api.config.Credentials;
 import com.youhogeon.finance.kis_api.context.ApiContext;
 import com.youhogeon.finance.kis_api.context.ApiData;
@@ -24,19 +27,21 @@ public class AuthMiddleware implements Middleware {
 
     @Override
     public void before(KisClient client, ApiContext context) {
+        NetworkRequest request = context.getRequest();
+
         ApiData apiData = context.getApiData();
-        HttpClientRequest request = context.getRequest();
         Credentials credentials = client.getConfig().getCredentials();
 
         boolean maskCredentials = client.getConfig().isMaskCredentials();
 
-        String[] maskingKeys = new String[] { "appkey", "appsecret", "authorization" };
+        String[] maskingKeys = new String[] { "appkey", "appsecret", "secretkey", "authorization", "approval_key" };
 
-        if (apiData.isBodyCredentialsRequired()) {
+        if (apiData.hasAnnotation(BodyCredentialsRequired.class)) {
             Map<String, Object> body = request.getBody();
 
             body.put("appkey", credentials.getAppKey());
             body.put("appsecret", credentials.getAppSecret());
+            body.put("secretkey", credentials.getAppSecret());
             // body.put("token", credentials.getAppToken()); // not required for now
 
             if (maskCredentials) {
@@ -44,13 +49,14 @@ public class AuthMiddleware implements Middleware {
             }
         }
 
-        if (apiData.isHeaderCredentialsRequired()) {
+        if (apiData.hasAnnotation(HeaderCredentialsRequired.class)) {
             Map<String, Object> headers = request.getHeaders();
-            String appToken = getAppToken(client, credentials);
+            String appToken = getAppToken(client, context);
 
             headers.put("appkey", credentials.getAppKey());
             headers.put("appsecret", credentials.getAppSecret());
             headers.put("authorization", "Bearer " + appToken);
+            headers.put("approval_key", credentials.getApprovalKey());
 
             if (maskCredentials) {
                 request.setHeaders(CredentialsUtil.maskMap(headers, maskingKeys));
@@ -79,7 +85,10 @@ public class AuthMiddleware implements Middleware {
         return null;
     }
 
-    private String getAppToken(KisClient client, Credentials credentials) {
+    private String getAppToken(KisClient client, ApiContext context) {
+        Configuration config = client.getConfig();
+        Credentials credentials = config.getCredentials();
+
         if (credentials.getAppToken() != null) {
             return credentials.getAppToken();
         }

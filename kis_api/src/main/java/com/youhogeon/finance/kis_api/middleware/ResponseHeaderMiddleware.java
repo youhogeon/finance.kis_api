@@ -10,7 +10,7 @@ import com.youhogeon.finance.kis_api.KisClient;
 import com.youhogeon.finance.kis_api.api.ApiResult;
 import com.youhogeon.finance.kis_api.api.annotation.Header;
 import com.youhogeon.finance.kis_api.context.ApiContext;
-import com.youhogeon.finance.kis_api.client.http.HttpClientResponse;
+import com.youhogeon.finance.kis_api.client.NetworkResponse;
 import com.youhogeon.finance.kis_api.util.ReflectionUtil;
 
 public class ResponseHeaderMiddleware implements Middleware {
@@ -22,7 +22,7 @@ public class ResponseHeaderMiddleware implements Middleware {
 
     @Override
     public void after(KisClient client, ApiContext context) {
-        HttpClientResponse response = context.getResponse();
+        NetworkResponse response = context.getResponse();
         ApiResult result = context.getApiResult();
 
         Map<String, List<String>> allHeaders = response.getHeaders();

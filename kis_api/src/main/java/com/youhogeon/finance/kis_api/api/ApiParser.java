@@ -6,12 +6,10 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.LinkedHashMap;
 
-import com.youhogeon.finance.kis_api.api.annotation.BodyCredentialsRequired;
-import com.youhogeon.finance.kis_api.api.annotation.HeaderCredentialsRequired;
 import com.youhogeon.finance.kis_api.api.annotation.Body;
 import com.youhogeon.finance.kis_api.api.annotation.Header;
 import com.youhogeon.finance.kis_api.api.annotation.Parameter;
-import com.youhogeon.finance.kis_api.api.annotation.URL;
+import com.youhogeon.finance.kis_api.api.annotation.RestApi;
 import com.youhogeon.finance.kis_api.context.ApiData;
 import com.youhogeon.finance.kis_api.exception.InvalidApiSpecException;
 import com.youhogeon.finance.kis_api.util.ReflectionUtil;
@@ -21,14 +19,14 @@ public class ApiParser {
     Api<?> apiRequest;
     Class<?> clazz;
     Field[] fields;
-    URL url;
+    RestApi url;
 
     public ApiParser(Api<?> apiRequest) {
         this.apiRequest = apiRequest;
         this.clazz = apiRequest.getClass();
         this.fields = ReflectionUtil.getAllFields(clazz);
 
-        this.url = clazz.getAnnotation(URL.class);
+        this.url = clazz.getAnnotation(RestApi.class);
 
         if (this.url == null) {
             throw new InvalidApiSpecException("URL annotation is required");
@@ -42,9 +40,8 @@ public class ApiParser {
             .headers(getHeaders())
             .parameters(getParameters())
             .body(getBody())
-            .headerCredentialsRequired(isHeaderCredentialsRequired())
-            .bodyCredentialsRequired(isBodyCredentialsRequired())
             .responseClass(getGenericType(apiRequest))
+            .annotations(getAnnotation())
             .build();
     }
 
@@ -68,12 +65,8 @@ public class ApiParser {
         return getFieldsByAnnotation(Body.class);
     }
 
-    private boolean isHeaderCredentialsRequired() {
-        return clazz.isAnnotationPresent(HeaderCredentialsRequired.class);
-    }
-
-    private boolean isBodyCredentialsRequired() {
-        return clazz.isAnnotationPresent(BodyCredentialsRequired.class);
+    private Annotation[] getAnnotation() {
+        return clazz.getAnnotations();
     }
 
     private LinkedHashMap<String, Object> getFieldsByAnnotation(Class<? extends Annotation> annotationClass) {

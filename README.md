@@ -62,13 +62,12 @@ InquirePriceResponse resp = client.execute(req);
     ```java
     import lombok.AllArgsConstructor;
 
-    import com.youhogeon.finance.kis_api.api.annotation.URL;
+    import com.youhogeon.finance.kis_api.api.annotation.RestApi;
     import com.youhogeon.finance.kis_api.api.annotation.Header;
-    import com.youhogeon.finance.kis_api.api.annotation.Method;
     import com.youhogeon.finance.kis_api.api.annotation.Body;
     import com.youhogeon.finance.kis_api.api.annotation.Parameter;
 
-    @URL(method = Method.POST, path = "/uapi/...")
+    @RestApi(method = URL.Method.POST, path = "/uapi/...")
     @AllArgsConstructor
     public class SampleApiRequest extends CommonRequest<SampleApiResponse> {
 

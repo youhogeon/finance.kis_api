@@ -1,9 +1,13 @@
 package com.youhogeon.finance.kis_api.client.http;
 
-import java.io.IOException;
+import com.youhogeon.finance.kis_api.api.annotation.RestApi;
+import com.youhogeon.finance.kis_api.client.NetworkClient;
+import com.youhogeon.finance.kis_api.context.ApiData;
 
-public interface HttpClient {
+public abstract class HttpClient implements NetworkClient {
 
-    public HttpClientResponse execute(HttpClientRequest request) throws IOException;
+    public boolean isSupport(ApiData apiData) {
+        return apiData.hasAnnotation(RestApi.class);
+    }
 
 }

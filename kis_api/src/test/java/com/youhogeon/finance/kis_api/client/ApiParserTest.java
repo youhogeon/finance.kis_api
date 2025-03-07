@@ -7,17 +7,17 @@ import com.youhogeon.finance.kis_api.api.ApiParser;
 import com.youhogeon.finance.kis_api.api.ApiResult;
 import com.youhogeon.finance.kis_api.api.annotation.Body;
 import com.youhogeon.finance.kis_api.api.annotation.BodyCredentialsRequired;
+import com.youhogeon.finance.kis_api.api.annotation.HeaderCredentialsRequired;
 import com.youhogeon.finance.kis_api.api.annotation.Header;
-import com.youhogeon.finance.kis_api.api.annotation.Method;
 import com.youhogeon.finance.kis_api.api.annotation.Parameter;
-import com.youhogeon.finance.kis_api.api.annotation.URL;
+import com.youhogeon.finance.kis_api.api.annotation.RestApi;
 import com.youhogeon.finance.kis_api.context.ApiData;
 
 class SampleApiResponse implements ApiResult {
 
 }
 
-@URL(path = "/sample", method = Method.POST)
+@RestApi(path = "/sample", method = RestApi.Method.POST)
 @BodyCredentialsRequired
 class SampleApi implements Api<SampleApiResponse>{
 
@@ -63,8 +63,8 @@ public class ApiParserTest {
         assert(data.getBody().get("test-body").equals("testBodyValue"));
         assert(data.getBody().get("test-body2").equals("testBodyValue2"));
 
-        assert(data.isBodyCredentialsRequired());
-        assert(!data.isHeaderCredentialsRequired());
+        assert(data.hasAnnotation(BodyCredentialsRequired.class));
+        assert(!data.hasAnnotation(HeaderCredentialsRequired.class));
     }
 
 }

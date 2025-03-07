@@ -7,7 +7,12 @@ import java.lang.annotation.ElementType;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface URL {
+public @interface RestApi {
+    public enum Method {
+        GET,
+        POST,
+    }
+
     Method method();
     String path();
 }

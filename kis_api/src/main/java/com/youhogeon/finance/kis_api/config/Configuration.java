@@ -1,5 +1,6 @@
 package com.youhogeon.finance.kis_api.config;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,11 +17,25 @@ import com.youhogeon.finance.kis_api.middleware.Middleware;
 public class Configuration {
 
     /**
-     * API 호스트 주소
+     * HTTP API 호스트 주소
      */
     @Getter
     @Setter
-    private String apiHost = "https://openapi.koreainvestment.com:9443";
+    private String httpHost = "https://openapi.koreainvestment.com:9443";
+
+    /**
+     * HTTP Timeout
+     */
+    @Getter
+    @Setter
+    private Duration httpTimeout = Duration.ofSeconds(10);
+
+    /**
+     * Socket API 호스트 주소
+     */
+    @Getter
+    @Setter
+    private String socketHost = "ws://ops.koreainvestment.com:21000";
 
     /**
      * 로깅 시 credential 정보를 마스킹할지 여부
