@@ -1,7 +1,6 @@
 package com.youhogeon.finance.kis_api.client.socket;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -25,8 +24,10 @@ import com.youhogeon.finance.kis_api.config.Configuration;
 import com.youhogeon.finance.kis_api.context.ApiContext;
 import com.youhogeon.finance.kis_api.context.ApiData;
 import com.youhogeon.finance.kis_api.exception.KisClientException;
+import com.youhogeon.finance.kis_api.util.CollectionUtil;
 import com.youhogeon.finance.kis_api.util.JsonConverter;
 import com.youhogeon.finance.kis_api.util.Pair;
+import com.youhogeon.finance.kis_api.util.ReflectionUtil;
 import com.youhogeon.finance.kis_api.util.StringUtil;
 
 import jakarta.websocket.ClientEndpoint;
@@ -38,19 +39,28 @@ import jakarta.websocket.WebSocketContainer;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+class Key extends Pair<String, String> {
+
+    public Key(String a, String b) {
+        super(a, b);
+    }
+
+}
+
 @ClientEndpoint
 public class JsrSocketClient extends SocketClient {
 
     private final Configuration config;
     private Session session;
 
-    private final ConcurrentHashMap<Pair<String, String>, CompletableFuture<Pair<WebSocketResponse, ApiResult>>> locks = new ConcurrentHashMap<>();
-
-    private final Map<String, Class<? extends ApiResult>> responseClassesByTrId = new HashMap<>();
-    private final ConcurrentHashMap<Pair<String, String>, Subscriber<?>> subscribers = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Key, CompletableFuture<WebSocketResponse>> locks = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Key, SubscriberInfo<?>> subscribers = new ConcurrentHashMap<>();
 
     private final WebSocketContainer container = ContainerProvider.getWebSocketContainer();
     private final URI uri;
+
+    private String aesKey;
+    private String ivKey;
 
     private static final Logger logger = LoggerFactory.getLogger(JsrSocketClient.class);
 
@@ -61,9 +71,9 @@ public class JsrSocketClient extends SocketClient {
 
     @AllArgsConstructor
     @Getter
-    class Subscriber<T extends LiveApiData> {
-        SubscribableApiResponse<T> apiResponse;
-        List<Consumer<T>> handlers;
+    class SubscriberInfo<T extends LiveApiData> {
+        SubscribableApiResult<T> apiResult;
+        List<Consumer<T[]>> handlers;
         Class<T> dataType;
     }
 
@@ -92,7 +102,9 @@ public class JsrSocketClient extends SocketClient {
         logger.debug("Data received from WebSocket: {}", message);
 
         if (isDataResponse(message)) {
-            dispatchDataMessage(message);
+            processDataMessage(message);
+
+            return;
         }
 
         WebSocketResponse response = JsonConverter.fromJson(message, WebSocketResponse.class);
@@ -103,131 +115,15 @@ public class JsrSocketClient extends SocketClient {
         }
 
         String trKey = response.getHeader("tr_key");
-        Pair<String, String> key = Pair.of(trId, trKey);
+        Key key = new Key(trId, trKey);
 
-        Class<? extends ApiResult> responseClass = responseClassesByTrId.get(trId);
-        if (responseClass == null) {
-            logger.error("Response class not found for trId: {}", trId);
-
-            return;
-        }
-
-        ApiResult apiResult;
-
-        try {
-            apiResult = responseClass.getDeclaredConstructor().newInstance();
-        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
-                | NoSuchMethodException | SecurityException e) {
-            logger.error("Invalid response class {} for trId: {}", trId, responseClass);
-
-            return;
-        }
-
-        Pair<WebSocketResponse, ApiResult> data = Pair.of(response, apiResult);
-        CompletableFuture<Pair<WebSocketResponse, ApiResult>> future = locks.remove(key);
+        CompletableFuture<WebSocketResponse> future = locks.remove(key);
 
         if (future != null) {
-            future.complete(data);
+            future.complete(response);
         } else {
             logger.warn("The server sent a response for data that was not requested: {}", response);
         }
-    }
-
-    private boolean isDataResponse(String message) {
-        return message.charAt(0) != '{';
-    }
-
-    private void dispatchDataMessage(String message) {
-        Pair<String, String> key = Pair.of("H0STCNT0", "005930");
-
-        Subscriber<?> subscriber = subscribers.get(key);
-
-        if (subscriber == null) {
-            logger.warn("No subscriber found for data message: {}", message);
-
-            return;
-        }
-
-        _dispatchSubscriber(subscriber);
-    }
-
-    private <T extends LiveApiData> void _dispatchSubscriber(Subscriber<T> subscriber) {
-        T data;
-        try {
-            data = subscriber.getDataType().getDeclaredConstructor().newInstance();
-
-            subscriber.getHandlers().forEach(handler -> handler.accept(data));
-        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
-                | NoSuchMethodException | SecurityException e) {
-
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private <T extends LiveApiData> Class<T> getDataType(SubscribableApiResponse<T> subscriber) {
-        Type generic = subscriber.getClass().getGenericSuperclass();
-
-        if (generic == null || generic == Object.class) {
-            Type[] genericInterfaces = subscriber.getClass().getGenericInterfaces();
-
-            if (genericInterfaces.length == 0) {
-                return null;
-            }
-
-            generic = genericInterfaces[0];
-        }
-
-        ParameterizedType parameterizedType = (ParameterizedType) generic;
-
-        return (Class<T>) parameterizedType.getActualTypeArguments()[0];
-    }
-
-    @Override
-    public void execute(ApiContext context) throws IOException {
-        ApiData apiData = context.getApiData();
-        WebSocketRequest request = (WebSocketRequest) context.getRequest();
-
-        String trId = request.getBody().get("tr_id").toString();
-        Pair<String, String> key = Pair.of(trId, request.getBody().get("tr_key").toString());
-
-        Subscriber<?> existedSubscriber = subscribers.get(key);
-        if (existedSubscriber != null) {
-            logger.warn("Duplicate request received. Current request is ignored: {}.", key);
-            logger.warn("If you want to unsubscribe from all previous handlers, call the unsubscribe method explicitly.", key);
-
-            context.setApiResult(existedSubscriber.getApiResponse());
-
-            return;
-        }
-
-        CompletableFuture<Pair<WebSocketResponse, ApiResult>> future = locks.computeIfAbsent(key, _k -> {
-            responseClassesByTrId.put(trId, apiData.getResponseClass());
-            sendMessage(request.toJson());
-            return new CompletableFuture<>();
-        });
-
-        Pair<WebSocketResponse, ApiResult> result;
-        try {
-            result = future.get(config.getSocketTimeout().toSeconds(), TimeUnit.SECONDS);
-
-            SubscribableApiResponse<?> apiResult = (SubscribableApiResponse<?>) result.getSecond();
-            Class<? extends LiveApiData> dataType = getDataType(apiResult);
-
-            @SuppressWarnings("unchecked")
-            List<Consumer<?>> handlersList = (List<Consumer<?>>)(List<?>)apiResult.getAllHandlers();
-
-            @SuppressWarnings({ "unchecked", "rawtypes" })
-            Subscriber<?> subscriber = new Subscriber(apiResult, handlersList, dataType);
-
-            subscribers.putIfAbsent(key, subscriber);
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            logger.error("Failed to get response from server", e);
-
-            throw new KisClientException("Failed to execute request", e);
-        }
-
-        context.setResponse(result.getFirst());
-        context.setApiResult(result.getSecond());
     }
 
     private void ensureConnected() {
@@ -258,6 +154,155 @@ public class JsrSocketClient extends SocketClient {
         }
 
         return false;
+    }
+
+    private boolean isDataResponse(String message) {
+        return message.charAt(0) != '{';
+    }
+
+    private void processDataMessage(String message) {
+        int i1 = message.indexOf('|');
+        int i2 = message.indexOf('|', i1 + 1);
+        int i3 = message.indexOf('|', i2 + 1);
+
+        boolean isEncrypted = message.substring(0, i1).equals("1");
+        String trId = message.substring(i1 + 1, i2);
+        int size = Integer.parseInt(message.substring(i2 + 1, i3));
+
+        String stringBody = message.substring(i3 + 1);
+
+        String[][] body = parseBody(stringBody, isEncrypted, size);
+        String trKey = body[0][0];
+
+        Key key = new Key(trId, trKey);
+
+        dispatch(key, body);
+    }
+
+    private <T extends LiveApiData> void dispatch(Key key, String[][] body) {
+        @SuppressWarnings("unchecked")
+        SubscriberInfo<T> subscriber = (SubscriberInfo<T>)subscribers.get(key);
+
+        if (subscriber == null) {
+            logger.warn("No subscriber found for data message: {}", key);
+
+            return;
+        }
+
+        Class<T> dataType = subscriber.getDataType();
+        T[] data = ReflectionUtil.createObjects(body, dataType);
+
+        subscriber.getHandlers().forEach(handler -> {
+            handler.accept(data);
+        });
+    }
+
+    @Override
+    public void execute(ApiContext context) throws IOException {
+        ApiData apiData = context.getApiData();
+        WebSocketRequest request = (WebSocketRequest) context.getRequest();
+
+        String trId = request.getBody().get("tr_id").toString();
+        String trKey = request.getBody().get("tr_key").toString();
+        Key key = new Key(trId, trKey);
+
+        Class<? extends ApiResult> responseClass = apiData.getResponseClass();
+        if (responseClass == null) {
+            logger.error("Response class not found for trId: {}", trId);
+
+            return;
+        }
+
+        SubscriberInfo<?> existedSubscriber = subscribers.get(key);
+        if (existedSubscriber != null) {
+            logger.warn("Duplicate request received. Current request is ignored: {}.", key);
+            logger.warn("If you want to unsubscribe from all previous handlers, call the unsubscribe method explicitly.", key);
+
+            context.setApiResult(existedSubscriber.getApiResult());
+
+            return;
+        }
+
+        CompletableFuture<WebSocketResponse> future = locks.computeIfAbsent(key, _k -> {
+            sendMessage(request.toJson());
+
+            return new CompletableFuture<>();
+        });
+
+
+        WebSocketResponse response;
+
+        try {
+            response = future.get(config.getSocketTimeout().toSeconds(), TimeUnit.SECONDS);
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            logger.error("Failed to get response from server", e);
+
+            throw new KisClientException("Failed to execute request", e);
+        }
+
+        @SuppressWarnings({ "rawtypes", "unchecked" })
+        SubscriberInfo<?> subscriber = subscribers.computeIfAbsent(key, k -> {
+            try {
+                SubscribableApiResult<?> apiResult = (SubscribableApiResult<?>) responseClass.getDeclaredConstructor().newInstance();
+                Class<? extends LiveApiData> dataType = getDataType(apiResult);
+
+                setEncryptionKeys(response);
+
+                List<Consumer<?>> handlersList = (List<Consumer<?>>)(List<?>)apiResult.getAllHandlers();
+
+                return new SubscriberInfo(apiResult, handlersList, dataType);
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                logger.error("Invalid response class {} for trId: {}", trId, responseClass);
+                throw new RuntimeException(e);
+            }
+        });
+
+        context.setResponse(response);
+        context.setApiResult(subscriber.getApiResult());
+    }
+
+    private void setEncryptionKeys(WebSocketResponse response) {
+        Map<String, String> output = response.getBody().getOutput();
+
+        aesKey = output.get("aes_key");
+        ivKey = output.get("iv_key");
+    }
+
+    private String[][] parseBody(String body, boolean isEncrypted, int size) {
+        if (isEncrypted) {
+            body = StringUtil.decryptAes256(body, aesKey, ivKey);
+        }
+
+        String[] splited = StringUtil.fastSplit(body, '|');
+
+        if (splited.length % size != 0) {
+            logger.error("Invalid body size: {}", body);
+
+            return null;
+        }
+
+        String[][] splitted = CollectionUtil.splitArray(splited, size);
+
+        return splitted;
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T extends LiveApiData> Class<T> getDataType(SubscribableApiResult<T> subscriber) {
+        Type generic = subscriber.getClass().getGenericSuperclass();
+
+        if (generic == null || generic == Object.class) {
+            Type[] genericInterfaces = subscriber.getClass().getGenericInterfaces();
+
+            if (genericInterfaces.length == 0) {
+                return null;
+            }
+
+            generic = genericInterfaces[0];
+        }
+
+        ParameterizedType parameterizedType = (ParameterizedType) generic;
+
+        return (Class<T>) parameterizedType.getActualTypeArguments()[0];
     }
 
     @Override

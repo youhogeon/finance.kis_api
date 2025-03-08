@@ -1,11 +1,15 @@
 package com.youhogeon.finance.kis_api.util;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+
+import com.youhogeon.finance.kis_api.api.annotation.Seq;
 
 public class ReflectionUtil {
 
@@ -43,45 +47,65 @@ public class ReflectionUtil {
         return annotatedFields;
     }
 
-    public static boolean compareAnnotation(Annotation annotation, Class<? extends Annotation> annotationClass, Object... expectedValues) {
-        if (annotation == null) {
-            return false;
-        }
+    public static List<Field> getSortedSeqFields(Class<?> clazz) {
+        List<Field> seqFields = new ArrayList<>();
+        Class<?> current = clazz;
 
-        if (annotation.annotationType() != annotationClass) {
-            return false;
-        }
-
-        try {
-            Method[] methods = annotationClass.getDeclaredMethods();
-            if (methods.length != expectedValues.length) {
-                return false;
-            }
-
-            for (int i = 0; i < methods.length; i++) {
-                Method method = methods[i];
-
-                if (method.getParameterCount() != 0) {
-                    return false; // ApiData는 파라미터 있는 메서드 불허
-                }
-
-                Object actualValue = method.invoke(annotation);
-
-                if (actualValue instanceof Object[] && expectedValues[i] instanceof Object[]) {
-                    if (!Arrays.equals((Object[]) actualValue, (Object[]) expectedValues[i])) {
-                        return false;
-                    }
-                } else {
-                    if (!actualValue.equals(expectedValues[i])) {
-                        return false;
-                    }
+        while (current != null) {
+            for (Field field : current.getDeclaredFields()) {
+                if (field.isAnnotationPresent(Seq.class)) {
+                    seqFields.add(field);
                 }
             }
-        } catch (Exception e) {
-
+            current = current.getSuperclass();
         }
 
-        return true;
+        seqFields.sort(Comparator.comparingInt(field -> field.getAnnotation(Seq.class).value()));
+
+        return seqFields;
+    }
+
+    public static <T> T[] createObjects(String[][] body, Class<T> dataType) {
+        List<Field> sortedFields = ReflectionUtil.getSortedSeqFields(dataType);
+
+        @SuppressWarnings("unchecked")
+        T[] objects = (T[]) Array.newInstance(dataType, body.length);
+
+        for (int i = 0; i < body.length; i++) {
+            String[] row = body[i];
+            T obj;
+            try {
+                obj = dataType.getDeclaredConstructor().newInstance();
+            } catch (Exception e) {
+                throw new RuntimeException("Could not create instance of " + dataType.getName() + " class", e);
+            }
+
+            for (int j = 0; j < sortedFields.size() && j < row.length; j++) {
+                Field field = sortedFields.get(j);
+                field.setAccessible(true);
+                String value = row[j];
+
+                try {
+                    Class<?> type = field.getType();
+                    if (type.equals(String.class)) {
+                        field.set(obj, value);
+                    } else if (type.equals(int.class) || type.equals(Integer.class)) {
+                        field.set(obj, Integer.parseInt(value));
+                    } else if (type.equals(long.class) || type.equals(Long.class)) {
+                        field.set(obj, Long.parseLong(value));
+                    } else if (type.equals(double.class) || type.equals(Double.class)) {
+                        field.set(obj, Double.parseDouble(value));
+                    } else {
+                        field.set(obj, value);
+                    }
+                } catch (IllegalAccessException | NumberFormatException e) {
+                    throw new RuntimeException("필드 주입 실패", e);
+                }
+            }
+            objects[i] = obj;
+        }
+
+        return objects;
     }
 
 }

@@ -1,8 +1,8 @@
 package com.youhogeon.finance.kis_api.api;
 
-import com.youhogeon.finance.kis_api.client.socket.SubscribableApiResponse;
+import com.youhogeon.finance.kis_api.client.socket.SubscribableApiResult;
 
-public abstract class CommonLiveResponse<T extends LiveApiData> extends SubscribableApiResponse<T> {
+public abstract class CommonLiveResponse<T extends LiveApiData> extends SubscribableApiResult<T> {
 
 
 
