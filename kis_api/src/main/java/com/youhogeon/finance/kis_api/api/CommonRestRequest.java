@@ -1,13 +1,17 @@
 package com.youhogeon.finance.kis_api.api;
 
 import com.youhogeon.finance.kis_api.api.annotation.Header;
+import com.youhogeon.finance.kis_api.api.annotation.auth.AppKeyRequired;
+import com.youhogeon.finance.kis_api.api.annotation.auth.AppSecretRequired;
 
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public abstract class CommonRequest<T extends ApiResult> implements Api<T> {
+@AppKeyRequired(location = AppKeyRequired.Location.HEADER)
+@AppSecretRequired(location = AppSecretRequired.Location.HEADER)
+public abstract class CommonRestRequest<T extends ApiResult> implements Api<T> {
 
     @Header("content-type")
     private String contentType = "application/json; charset=utf-8";

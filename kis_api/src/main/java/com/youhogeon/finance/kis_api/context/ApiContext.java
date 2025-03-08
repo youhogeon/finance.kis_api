@@ -1,6 +1,7 @@
 package com.youhogeon.finance.kis_api.context;
 
 import com.youhogeon.finance.kis_api.api.ApiResult;
+import com.youhogeon.finance.kis_api.client.NetworkClient;
 import com.youhogeon.finance.kis_api.client.NetworkRequest;
 import com.youhogeon.finance.kis_api.client.NetworkResponse;
 import com.youhogeon.finance.kis_api.config.Credentials;
@@ -23,6 +24,8 @@ import lombok.RequiredArgsConstructor;
 public class ApiContext {
 
     @NonNull Credentials credentials;
+
+    NetworkClient networkClient;
 
     ApiData apiData;
     NetworkRequest request;

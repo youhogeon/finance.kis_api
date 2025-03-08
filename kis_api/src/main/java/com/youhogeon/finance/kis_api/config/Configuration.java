@@ -38,6 +38,13 @@ public class Configuration {
     private String socketHost = "ws://ops.koreainvestment.com:21000";
 
     /**
+     * Socket Timeout
+     */
+    @Getter
+    @Setter
+    private Duration socketTimeout = Duration.ofSeconds(10);
+
+    /**
      * 로깅 시 credential 정보를 마스킹할지 여부
      */
     @Getter

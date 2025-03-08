@@ -1,23 +1,30 @@
 package com.youhogeon.finance.kis_api.client.http;
 
 import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.youhogeon.finance.kis_api.api.ApiResult;
+import com.youhogeon.finance.kis_api.api.annotation.Header;
 import com.youhogeon.finance.kis_api.config.Configuration;
 import com.youhogeon.finance.kis_api.context.ApiContext;
 import com.youhogeon.finance.kis_api.context.ApiData;
 import com.youhogeon.finance.kis_api.util.CredentialsUtil;
 import com.youhogeon.finance.kis_api.util.JsonConverter;
+import com.youhogeon.finance.kis_api.util.ReflectionUtil;
+import com.youhogeon.finance.kis_api.util.StringUtil;
 import com.youhogeon.finance.kis_api.util.UrlParameterConverter;
 import com.youhogeon.finance.kis_api.exception.InvalidApiRequestException;
 
@@ -41,18 +48,12 @@ public class JavaHttpClient extends com.youhogeon.finance.kis_api.client.http.Ht
     @Override
     public HttpClientRequest makeRequest(ApiData apiData) {
         String apiHost = config.getHttpHost();
-
         String urlPath = apiData.getUrlPath();
-
-        if (apiHost.endsWith("/") && urlPath.startsWith("/")) {
-            urlPath = urlPath.substring(1);
-        } else if (!apiHost.endsWith("/") && !urlPath.startsWith("/")) {
-            urlPath = "/" + urlPath;
-        }
+        String url = StringUtil.concatUrl(apiHost, urlPath);
 
         return HttpClientRequest.builder()
             .method(apiData.getMethod())
-            .url(apiHost + urlPath)
+            .url(url)
             .parameters(apiData.getParameters())
             .headers(apiData.getHeaders())
             .body(apiData.getBody())
@@ -102,13 +103,72 @@ public class JavaHttpClient extends com.youhogeon.finance.kis_api.client.http.Ht
             throw new InvalidApiRequestException(responseString, statusCode);
         }
 
-        context.setResponse(
-            HttpClientResponse.builder()
-                .statusCode(statusCode)
-                .headers(headers)
-                .body(responseString)
-                .build()
-        );
+        HttpClientResponse clinetResponse = HttpClientResponse.builder()
+            .statusCode(statusCode)
+            .headers(headers)
+            .body(responseString)
+            .build();
+
+        ApiResult apiResult = makeApiResult(clinetResponse, context.getApiData());
+
+        context.setResponse(clinetResponse);
+        context.setApiResult(apiResult);
+    }
+
+    private ApiResult makeApiResult(HttpClientResponse clinetResponse, ApiData apiData) {
+        String responseString = clinetResponse.getBody();
+
+        ApiResult result = JsonConverter.fromJson(responseString, apiData.getResponseClass());
+
+        injectHeader(clinetResponse, result);
+
+        return result;
+    }
+
+    private void injectHeader(HttpClientResponse clientResponse, ApiResult result) {
+        Map<String, List<String>> allHeaders = clientResponse.getHeaders();
+        Map<String, String> headers = new HashMap<>();
+
+        for (String key : allHeaders.keySet()) {
+            List<String> value = allHeaders.get(key);
+
+            if (value.isEmpty() || value.size() > 1) {
+                continue;
+            }
+
+            headers.put(key, value.get(0));
+        }
+
+        Field[] fields = ReflectionUtil.getAllFields(result.getClass());
+
+        for (Field field : fields) {
+            Annotation annotation = field.getAnnotation(Header.class);
+
+            if (annotation == null) {
+                continue;
+            }
+
+            String key = ((Header) annotation).value();
+
+            if (headers.containsKey(key)) {
+                try {
+                    field.setAccessible(true);
+                    field.set(result, headers.get(key));
+                } catch (IllegalAccessException e) {
+                    continue;
+                }
+            }
+        }
+
+    }
+
+    @Override
+    public void close() throws IOException {
+        if (client == null) {
+            return;
+        }
+
+        client.close();
     }
 
     public HttpRequest.Builder getRequestBuilder(HttpClientRequest request) {
@@ -148,10 +208,4 @@ public class JavaHttpClient extends com.youhogeon.finance.kis_api.client.http.Ht
 
         return response;
     }
-
-    @Override
-    public void close() throws IOException {
-        // do nothing
-    }
-
 }

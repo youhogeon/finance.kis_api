@@ -12,10 +12,6 @@ import com.youhogeon.finance.kis_api.api.ApiParser;
 import com.youhogeon.finance.kis_api.api.ApiResult;
 import com.youhogeon.finance.kis_api.client.NetworkClient;
 import com.youhogeon.finance.kis_api.client.NetworkRequest;
-import com.youhogeon.finance.kis_api.client.NetworkResponse;
-import com.youhogeon.finance.kis_api.client.http.HttpClient;
-import com.youhogeon.finance.kis_api.client.http.HttpClientRequest;
-import com.youhogeon.finance.kis_api.client.http.HttpClientResponse;
 import com.youhogeon.finance.kis_api.client.http.JavaHttpClient;
 import com.youhogeon.finance.kis_api.client.socket.JsrSocketClient;
 import com.youhogeon.finance.kis_api.config.Configuration;
@@ -27,8 +23,6 @@ import com.youhogeon.finance.kis_api.exception.KisClientException;
 import com.youhogeon.finance.kis_api.middleware.AuthMiddleware;
 import com.youhogeon.finance.kis_api.middleware.Middleware;
 import com.youhogeon.finance.kis_api.middleware.RateLimitingMiddleware;
-import com.youhogeon.finance.kis_api.middleware.ResponseHeaderMiddleware;
-import com.youhogeon.finance.kis_api.util.JsonConverter;
 
 import lombok.Getter;
 
@@ -49,7 +43,6 @@ public class KisClient {
         setConfig(config);
 
         middlewares.add(new AuthMiddleware());
-        middlewares.add(new ResponseHeaderMiddleware());
         middlewares.add(new RateLimitingMiddleware());
         middlewares.addAll(config.getAllMiddlewares());
 
@@ -123,11 +116,11 @@ public class KisClient {
         ApiParser parser = new ApiParser(api);
         ApiData data = parser.parse();
 
-        context.setApiData(data);
-
         NetworkClient client = getClient(data);
         NetworkRequest request = client.makeRequest(data);
 
+        context.setApiData(data);
+        context.setNetworkClient(client);
         context.setRequest(request);
 
         for (Middleware middleware : middlewares) {
@@ -140,17 +133,11 @@ public class KisClient {
             throw new InvalidApiRequestException("Failed to get response from server. (" + e.getMessage() + ")");
         }
 
-        NetworkResponse response = context.getResponse();
-        String responseString = response.getBody();
-
-        ApiResult result = JsonConverter.fromJson(responseString, data.getResponseClass());
-
-        context.setResponse(response);
-        context.setApiResult(result);
-
         for (Middleware middleware : middlewares) {
             middleware.after(this, context);
         }
+
+        ApiResult result = context.getApiResult();
 
         @SuppressWarnings("unchecked")
         T _result = (T)result;

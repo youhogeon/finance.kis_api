@@ -8,10 +8,13 @@ import java.util.LinkedHashMap;
 
 import com.youhogeon.finance.kis_api.api.annotation.Body;
 import com.youhogeon.finance.kis_api.api.annotation.Header;
+import com.youhogeon.finance.kis_api.api.annotation.LiveApi;
 import com.youhogeon.finance.kis_api.api.annotation.Parameter;
 import com.youhogeon.finance.kis_api.api.annotation.RestApi;
 import com.youhogeon.finance.kis_api.context.ApiData;
 import com.youhogeon.finance.kis_api.exception.InvalidApiSpecException;
+import com.youhogeon.finance.kis_api.util.AnnotationUtil;
+import com.youhogeon.finance.kis_api.util.Pair;
 import com.youhogeon.finance.kis_api.util.ReflectionUtil;
 
 public class ApiParser {
@@ -19,24 +22,19 @@ public class ApiParser {
     Api<?> apiRequest;
     Class<?> clazz;
     Field[] fields;
-    RestApi url;
 
     public ApiParser(Api<?> apiRequest) {
         this.apiRequest = apiRequest;
         this.clazz = apiRequest.getClass();
         this.fields = ReflectionUtil.getAllFields(clazz);
-
-        this.url = clazz.getAnnotation(RestApi.class);
-
-        if (this.url == null) {
-            throw new InvalidApiSpecException("URL annotation is required");
-        }
     }
 
     public ApiData parse() {
+        Pair<String, String> url = getUrlPath();
+
         return ApiData.builder()
-            .method(getMethod())
-            .urlPath(getUrlPath())
+            .method(url.getFirst())
+            .urlPath(url.getSecond())
             .headers(getHeaders())
             .parameters(getParameters())
             .body(getBody())
@@ -45,12 +43,20 @@ public class ApiParser {
             .build();
     }
 
-    private String getUrlPath() {
-        return url.path();
-    }
+    private Pair<String, String> getUrlPath() {
+        RestApi restApi = clazz.getAnnotation(RestApi.class);
 
-    private String getMethod() {
-        return url.method().name();
+        if (restApi != null) {
+            return Pair.of(restApi.method().name(), restApi.path());
+        }
+
+        LiveApi liveApi = clazz.getAnnotation(LiveApi.class);
+
+        if (liveApi != null) {
+            return Pair.of("WS", liveApi.path());
+        }
+
+        throw new InvalidApiSpecException("Api class must have RestApi or LiveApi annotation");
     }
 
     private LinkedHashMap<String, Object> getHeaders() {
@@ -66,7 +72,7 @@ public class ApiParser {
     }
 
     private Annotation[] getAnnotation() {
-        return clazz.getAnnotations();
+        return AnnotationUtil.getAllAnnotations(clazz).toArray(new Annotation[0]);
     }
 
     private LinkedHashMap<String, Object> getFieldsByAnnotation(Class<? extends Annotation> annotationClass) {

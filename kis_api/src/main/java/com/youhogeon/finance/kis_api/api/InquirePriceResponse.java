@@ -5,7 +5,7 @@ import lombok.ToString;
 
 @Getter
 @ToString(callSuper = true)
-public class InquirePriceResponse extends CommonResponse {
+public class InquirePriceResponse extends CommonRestResponse {
 
     private String rtCd;
     private String msgCd;
