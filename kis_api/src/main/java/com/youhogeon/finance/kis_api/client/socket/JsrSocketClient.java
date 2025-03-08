@@ -111,6 +111,8 @@ public class JsrSocketClient extends SocketClient {
 
         String trId = response.getHeader("tr_id");
         if (trId.equals("PINGPONG")) {
+            sendMessage(message); // echo PONG
+
             return;
         }
 
