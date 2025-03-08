@@ -3,7 +3,7 @@ package com.youhogeon.finance.kis_api.api;
 import lombok.Getter;
 
 @Getter
-public class H0STCNT0Data implements LiveApiData{
+public class H0STCNT0Data implements LiveApiData {
 
     private String mkscShrnIscd;          // 유가증권 단축 종목코드
     private String stckCntgHour;          // 주식 체결 시간
