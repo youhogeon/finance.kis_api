@@ -1,5 +1,6 @@
 package com.youhogeon.finance.kis_api.client.socket;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import com.youhogeon.finance.kis_api.client.NetworkRequest;
@@ -10,7 +11,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class WebSocketRequest implements NetworkRequest {
+public class WebSocketRequest implements NetworkRequest, Cloneable {
 
     private String url;
     private Map<String, Object> headers;
@@ -25,5 +26,12 @@ public class WebSocketRequest implements NetworkRequest {
         return JsonUtil.toJson(map);
     }
 
+    protected WebSocketRequest clone() {
+        return WebSocketRequest.builder()
+            .url(url)
+            .headers(new HashMap<>(headers))
+            .body(new HashMap<>(body))
+            .build();
+    }
 
 }

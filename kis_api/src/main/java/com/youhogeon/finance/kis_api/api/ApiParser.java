@@ -2,8 +2,6 @@ package com.youhogeon.finance.kis_api.api;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.LinkedHashMap;
 
 import com.youhogeon.finance.kis_api.api.annotation.Body;
@@ -111,24 +109,8 @@ public class ApiParser {
         return headers;
     }
 
-    @SuppressWarnings("unchecked")
     private <T extends ApiResult> Class<T> getGenericType(Api<T> api) {
-        Type generic = api.getClass().getGenericSuperclass();
-
-        if (generic == null || generic == Object.class) {
-            Type[] genericInterfaces = api.getClass().getGenericInterfaces();
-
-            if (genericInterfaces.length == 0) {
-                return null;
-            }
-
-            generic = genericInterfaces[0];
-        }
-
-        ParameterizedType parameterizedType = (ParameterizedType) generic;
-
-
-        return (Class<T>) parameterizedType.getActualTypeArguments()[0];
+        return ReflectionUtil.getGenericParameterType(api);
     }
 
 }

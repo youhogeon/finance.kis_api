@@ -3,9 +3,9 @@ package com.youhogeon.finance.kis_api.util;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
@@ -107,5 +107,49 @@ public class ReflectionUtil {
 
         return objects;
     }
+
+    public static <T> Class<T> getGenericParameterType(Object instance) {
+        return getGenericParameterType(instance, 0);
+    }
+
+    public static <T> Class<T> getGenericParameterType(Object instance, int index) {
+        Class<?> clazz = instance.getClass();
+
+        Type generic = clazz.getGenericSuperclass();
+        if (generic instanceof ParameterizedType) {
+            Class<T> type = extractType((ParameterizedType) generic, index);
+            if (type != null) {
+                return type;
+            }
+        }
+
+
+        Type[] interfaces = clazz.getGenericInterfaces();
+        for (Type type : interfaces) {
+            if (type instanceof ParameterizedType) {
+                Class<T> result = extractType((ParameterizedType) type, index);
+                if (result != null) {
+                    return result;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> Class<T> extractType(ParameterizedType pt, int index) {
+        Type[] typeArgs = pt.getActualTypeArguments();
+        if (index < typeArgs.length) {
+            Type typeArg = typeArgs[index];
+            if (typeArg instanceof Class) {
+                return (Class<T>) typeArg;
+            } else if (typeArg instanceof ParameterizedType) {
+                return (Class<T>) ((ParameterizedType) typeArg).getRawType();
+            }
+        }
+        return null;
+    }
+
 
 }
