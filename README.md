@@ -2,11 +2,15 @@
 [한국투자증권 API](https://apiportal.koreainvestment.com/) 에 대한 Java Wrapper.
 
 다음과 같은 기능을 제공.
-* API 호출
-* 유량 제어 (초당 호출 수 제한에 대한 제어)
+* REST API 호출
+    * 인증키(app token) 발급 및 관리
+    * 유량 제어 (초당 호출 수 제한에 대한 제어)
+* WebSocket API 호출
+    * 인증키(approval_key) 발급 및 관리
+    * 연결, 데이터 구독·해제 관리
 
-## Usage
-### Client 객체 초기화 (기본)
+## 사용자 가이드
+### 1️⃣Client 객체 초기화
 ```java
 Configuration config = new Configuration();
 
@@ -15,7 +19,7 @@ config.addCredentials(new Credentials("KEY", "SECRET")); // 계좌 AppKey, AppSe
 KisClient client = new KisClient(config);
 ```
 
-### Client 객체 초기화 (다중 계좌)
+#### 다중 계좌인 경우
 ```java
 Credentials c1 = new Credentials("KEY", "SECRET");
 Credentials c2 = new Credentials("KEY", "SECRET");
@@ -41,7 +45,7 @@ config.addCredentials(c2);
 KisClient client = new KisClient(config);
 ```
 
-### API 호출
+### 2️⃣ REST API 호출
 ```java
 // 주식현재가 시세
 InquirePriceRequest req = new InquirePriceRequest("005930");
@@ -53,23 +57,34 @@ InquirePriceResponse resp = client.execute(req);
 // InquirePriceResponse resp = client.execute(req, "firstAccount");
 ```
 
-## API 추가
-한국투자증권에서 제공하는 모든 API를 본 라이브러리에서 지원하는 것이 목표이나, 현재 모든 API가 구현되어있지 않음.
+### 3️⃣ WebSocket API 호출
+```java
+// 실시간 체결가(KRX)
+H0STCNT0Request req = new H0STCNT0Request(code);
+H0STCNT0Response resp = client.execute(req); // WebSocket API의 호출 반환값에는 데이터가 없고, 대신 addHandler 메서드를 통해 이후 수신받는 데이터에 접근 가능
 
-아래와 같은 방법으로 CustomAPI 제작 가능.
+resp.addHandler((response) -> {
+    // do Something..
+});
+
+// resp.removeHandler(...) // 특정 handler 제거
+// resp.unsubscribe() // 모든 handler를 제거하고 서버에게 구독 해제 요청을 보냄
+```
+
+
+## 개발자 가이드
+### REST API 추가
+한국투자증권에서 제공하는 모든 API를 본 라이브러리에서 지원하는 것이 목표이나, 현재 모든 API가 구현되어있지 않습니다.
+
+대신 API SPEC을 정의만 하면 되는 간단한 방법으로 Custom API를 추가할 수 있게 구현되어있습니다.
+
+아래와 같은 방법으로 Custom API 제작 가능합니다.
 
 1. API Request Class 생성
     ```java
-    import lombok.AllArgsConstructor;
-
-    import com.youhogeon.finance.kis_api.api.annotation.RestApi;
-    import com.youhogeon.finance.kis_api.api.annotation.Header;
-    import com.youhogeon.finance.kis_api.api.annotation.Body;
-    import com.youhogeon.finance.kis_api.api.annotation.Parameter;
-
-    @RestApi(method = URL.Method.POST, path = "/uapi/...")
+    @RestApi(method = RestApi.Method.POST, path = "/uapi/...")
     @AllArgsConstructor
-    public class SampleApiRequest extends CommonRequest<SampleApiResponse> {
+    public class SampleApiRequest extends CommonRequest<SampleApiResponse> { // 아래에서 만들 Response Class를 Generic으로 지정
 
         // @Header Annotation이 붙은 필드는 요청 헤더에 추가됨.
         @Header("tr_id")
@@ -112,6 +127,12 @@ InquirePriceResponse resp = client.execute(req);
     ```
 1. API 호출
     ```java
+    // 별다른 코드 필요 없이, Request Class, Response Class만 잘 정의하면 바로 사용 가능
     SampleApiRequest req = new SampleApiRequest();
     SampleApiResponse resp = client.execute(req);
     ```
+
+### WebSocket API 추가
+WebSocket API는 Request, Response Class 외에 Data Class(실시간 수신받는 데이터 정보)가 추가로 필요합니다.
+
+`H0STCNT0Request`, `H0STCNT0Response`, `H0STCNT0Data`를 참고하십시오.
