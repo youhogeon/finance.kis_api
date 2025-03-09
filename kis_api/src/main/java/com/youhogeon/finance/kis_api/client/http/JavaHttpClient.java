@@ -22,10 +22,9 @@ import com.youhogeon.finance.kis_api.config.Configuration;
 import com.youhogeon.finance.kis_api.context.ApiContext;
 import com.youhogeon.finance.kis_api.context.ApiData;
 import com.youhogeon.finance.kis_api.util.CredentialsUtil;
-import com.youhogeon.finance.kis_api.util.JsonConverter;
+import com.youhogeon.finance.kis_api.util.JsonUtil;
 import com.youhogeon.finance.kis_api.util.ReflectionUtil;
 import com.youhogeon.finance.kis_api.util.StringUtil;
-import com.youhogeon.finance.kis_api.util.UrlParameterConverter;
 import com.youhogeon.finance.kis_api.exception.InvalidApiRequestException;
 
 public class JavaHttpClient extends com.youhogeon.finance.kis_api.client.http.HttpClient {
@@ -118,7 +117,7 @@ public class JavaHttpClient extends com.youhogeon.finance.kis_api.client.http.Ht
     private ApiResult makeApiResult(HttpClientResponse clinetResponse, ApiData apiData) {
         String responseString = clinetResponse.getBody();
 
-        ApiResult result = JsonConverter.fromJson(responseString, apiData.getResponseClass());
+        ApiResult result = JsonUtil.fromJson(responseString, apiData.getResponseClass());
 
         injectHeader(clinetResponse, result);
 
@@ -172,7 +171,7 @@ public class JavaHttpClient extends com.youhogeon.finance.kis_api.client.http.Ht
     }
 
     public HttpRequest.Builder getRequestBuilder(HttpClientRequest request) {
-        String parameter = UrlParameterConverter.toUrlParams(request.getParameters());
+        String parameter = StringUtil.makeUrlParamString(request.getParameters());
         String fullUrl = request.getUrl() + "?" + parameter;
 
         HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
@@ -198,7 +197,7 @@ public class JavaHttpClient extends com.youhogeon.finance.kis_api.client.http.Ht
     }
 
     public HttpResponse<String> POST(HttpClientRequest request) throws IOException, InterruptedException {
-        String jsonBody = JsonConverter.toJson(request.getBody());
+        String jsonBody = JsonUtil.toJson(request.getBody());
 
         HttpRequest req = getRequestBuilder(request)
                             .POST(HttpRequest.BodyPublishers.ofString(jsonBody, StandardCharsets.UTF_8))

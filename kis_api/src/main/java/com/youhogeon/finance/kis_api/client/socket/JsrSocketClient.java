@@ -25,7 +25,7 @@ import com.youhogeon.finance.kis_api.context.ApiContext;
 import com.youhogeon.finance.kis_api.context.ApiData;
 import com.youhogeon.finance.kis_api.exception.KisClientException;
 import com.youhogeon.finance.kis_api.util.CollectionUtil;
-import com.youhogeon.finance.kis_api.util.JsonConverter;
+import com.youhogeon.finance.kis_api.util.JsonUtil;
 import com.youhogeon.finance.kis_api.util.Pair;
 import com.youhogeon.finance.kis_api.util.ReflectionUtil;
 import com.youhogeon.finance.kis_api.util.StringUtil;
@@ -107,7 +107,7 @@ public class JsrSocketClient extends SocketClient {
             return;
         }
 
-        WebSocketResponse response = JsonConverter.fromJson(message, WebSocketResponse.class);
+        WebSocketResponse response = JsonUtil.fromJson(message, WebSocketResponse.class);
 
         String trId = response.getHeader("tr_id");
         if (trId.equals("PINGPONG")) {

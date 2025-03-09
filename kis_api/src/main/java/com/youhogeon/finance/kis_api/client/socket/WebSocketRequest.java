@@ -3,7 +3,7 @@ package com.youhogeon.finance.kis_api.client.socket;
 import java.util.Map;
 
 import com.youhogeon.finance.kis_api.client.NetworkRequest;
-import com.youhogeon.finance.kis_api.util.JsonConverter;
+import com.youhogeon.finance.kis_api.util.JsonUtil;
 
 import lombok.Builder;
 import lombok.Data;
@@ -22,7 +22,7 @@ public class WebSocketRequest implements NetworkRequest {
             "body", Map.of("input", body)
         );
 
-        return JsonConverter.toJson(map);
+        return JsonUtil.toJson(map);
     }
 
 
