@@ -6,8 +6,8 @@ import java.util.LinkedHashMap;
 
 import com.youhogeon.finance.kis_api.api.annotation.Body;
 import com.youhogeon.finance.kis_api.api.annotation.Header;
-import com.youhogeon.finance.kis_api.api.annotation.LiveApi;
 import com.youhogeon.finance.kis_api.api.annotation.Parameter;
+import com.youhogeon.finance.kis_api.api.annotation.RealTimeApi;
 import com.youhogeon.finance.kis_api.api.annotation.RestApi;
 import com.youhogeon.finance.kis_api.context.ApiData;
 import com.youhogeon.finance.kis_api.exception.InvalidApiSpecException;
@@ -17,14 +17,14 @@ import com.youhogeon.finance.kis_api.util.ReflectionUtil;
 
 public class ApiParser {
 
-    Api<?> apiRequest;
-    Class<?> clazz;
-    Field[] fields;
+    private Api<?> apiRequest;
+    private Class<?> clazz;
+
+    // private Map<String, ApiData> cache = new HashMap<>();
 
     public ApiParser(Api<?> apiRequest) {
         this.apiRequest = apiRequest;
         this.clazz = apiRequest.getClass();
-        this.fields = ReflectionUtil.getAllFields(clazz);
     }
 
     public ApiData parse() {
@@ -33,11 +33,11 @@ public class ApiParser {
         return ApiData.builder()
             .method(url.getFirst())
             .urlPath(url.getSecond())
+            .responseClass(getGenericType(apiRequest))
+            .annotations(getAnnotation())
             .headers(getHeaders())
             .parameters(getParameters())
             .body(getBody())
-            .responseClass(getGenericType(apiRequest))
-            .annotations(getAnnotation())
             .build();
     }
 
@@ -48,13 +48,13 @@ public class ApiParser {
             return Pair.of(restApi.method().name(), restApi.path());
         }
 
-        LiveApi liveApi = clazz.getAnnotation(LiveApi.class);
+        RealTimeApi realTimeApi = clazz.getAnnotation(RealTimeApi.class);
 
-        if (liveApi != null) {
-            return Pair.of("WS", liveApi.path());
+        if (realTimeApi != null) {
+            return Pair.of("WS", realTimeApi.path());
         }
 
-        throw new InvalidApiSpecException("Api class must have RestApi or LiveApi annotation");
+        throw new InvalidApiSpecException("Api class must have RestApi or RealTimeApi annotation");
     }
 
     private LinkedHashMap<String, Object> getHeaders() {
@@ -75,8 +75,9 @@ public class ApiParser {
 
     private LinkedHashMap<String, Object> getFieldsByAnnotation(Class<? extends Annotation> annotationClass) {
         LinkedHashMap<String, Object> headers = new LinkedHashMap<>();
+        Field[] fields = ReflectionUtil.getAllFields(clazz);
 
-        for (Field field : this.fields) {
+        for (Field field : fields) {
             Annotation annotation = field.getAnnotation(annotationClass);
 
             if (annotation == null) {

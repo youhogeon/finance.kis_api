@@ -1,5 +1,8 @@
 package com.youhogeon.finance.kis_api.api;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.youhogeon.finance.kis_api.api.annotation.Body;
 import com.youhogeon.finance.kis_api.api.annotation.Header;
 import com.youhogeon.finance.kis_api.api.annotation.auth.ApprovalKeyRequired;
 
@@ -7,14 +10,10 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-import com.youhogeon.finance.kis_api.api.annotation.Body;
-
 @Getter
 @Setter
 @ApprovalKeyRequired(location = ApprovalKeyRequired.Location.HEADER)
-public abstract class CommonLiveRequest<T extends ApiResult> implements Api<T> {
+public abstract class CommonRealTimeApi<T extends ApiResult> implements Api<T> {
 
     public enum TransactionType {
         SUBSCRIBE("1"),
@@ -48,7 +47,7 @@ public abstract class CommonLiveRequest<T extends ApiResult> implements Api<T> {
         }
     }
 
-    public CommonLiveRequest(String trId, String trKey) {
+    public CommonRealTimeApi(String trId, String trKey) {
         this.trId = trId;
         this.trKey = trKey;
     }

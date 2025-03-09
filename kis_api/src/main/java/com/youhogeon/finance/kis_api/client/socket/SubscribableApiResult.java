@@ -8,9 +8,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.youhogeon.finance.kis_api.api.ApiResult;
-import com.youhogeon.finance.kis_api.api.LiveApiData;
+import com.youhogeon.finance.kis_api.api.RealTimeApiData;
 
-public abstract class SubscribableApiResult<T extends LiveApiData> implements ApiResult {
+public abstract class SubscribableApiResult<T extends RealTimeApiData> implements ApiResult {
 
     private List<Consumer<T[]>> handlers = new ArrayList<>();
     private UnsubscribeCallback unsubscribeCallback;

@@ -15,8 +15,8 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.youhogeon.finance.kis_api.api.CommonLiveRequest;
-import com.youhogeon.finance.kis_api.api.LiveApiData;
+import com.youhogeon.finance.kis_api.api.CommonRealTimeApi;
+import com.youhogeon.finance.kis_api.api.RealTimeApiData;
 import com.youhogeon.finance.kis_api.config.Configuration;
 import com.youhogeon.finance.kis_api.context.ApiContext;
 import com.youhogeon.finance.kis_api.context.ApiData;
@@ -73,7 +73,7 @@ public class JsrSocketClient extends SocketClient {
 
     @AllArgsConstructor
     @Getter
-    class SubscriberInfo<T extends LiveApiData> {
+    class SubscriberInfo<T extends RealTimeApiData> {
         SubscribableApiResult<T> apiResult;
         List<Consumer<T[]>> handlers;
         Class<T> dataType;
@@ -197,7 +197,7 @@ public class JsrSocketClient extends SocketClient {
         }
     }
 
-    private <T extends LiveApiData> void dispatch(Key key, String[][] body) {
+    private <T extends RealTimeApiData> void dispatch(Key key, String[][] body) {
         @SuppressWarnings("unchecked")
         SubscriberInfo<T> subscriber = (SubscriberInfo<T>)subscribers.get(key);
 
@@ -260,7 +260,7 @@ public class JsrSocketClient extends SocketClient {
                         return;
                     }
 
-                    unsubscribeRequest.getHeaders().put("tr_type", CommonLiveRequest.TransactionType.UNSUBSCRIBE); // unsubscribe
+                    unsubscribeRequest.getHeaders().put("tr_type", CommonRealTimeApi.TransactionType.UNSUBSCRIBE); // unsubscribe
 
                     sendMessage(key, unsubscribeRequest);
                     subscribers.remove(key);
@@ -268,7 +268,7 @@ public class JsrSocketClient extends SocketClient {
                     logger.info("Unsubscribe request sent successfully for {}", key);
                 });
 
-                Class<? extends LiveApiData> dataType = ReflectionUtil.getGenericParameterType(apiResult);
+                Class<? extends RealTimeApiData> dataType = ReflectionUtil.getGenericParameterType(apiResult);
                 List<Consumer<?>> handlersList = (List<Consumer<?>>)(List<?>)apiResult.getAllHandlers();
 
                 setEncryptionKeys(response);

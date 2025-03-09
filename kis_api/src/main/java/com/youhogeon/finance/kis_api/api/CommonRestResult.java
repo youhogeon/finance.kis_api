@@ -7,7 +7,7 @@ import lombok.ToString;
 
 @Getter
 @ToString()
-public abstract class CommonRestResponse implements ApiResult {
+public abstract class CommonRestResult implements ApiResult {
 
     @Header("content-type")
     private String contentType;

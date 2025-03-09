@@ -26,7 +26,7 @@ public class Credentials {
      *
      * 한국투자증권에서 제공하는 유량은 41 연결로 제한되어 있음
      */
-    private int socketLimitPerSecond = 41;
+    // private int socketLimitPerSecond = 41;
 
     public Credentials(String apiKey, String apiSecret) {
         this.appKey = apiKey;

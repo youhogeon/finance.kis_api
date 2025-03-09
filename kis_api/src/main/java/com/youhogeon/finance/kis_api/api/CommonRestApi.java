@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 @AppKeyRequired(location = AppKeyRequired.Location.HEADER)
 @AppSecretRequired(location = AppSecretRequired.Location.HEADER)
-public abstract class CommonRestRequest<T extends ApiResult> implements Api<T> {
+public abstract class CommonRestApi<T extends ApiResult> implements Api<T> {
 
     @Header("content-type")
     private String contentType = "application/json; charset=utf-8";

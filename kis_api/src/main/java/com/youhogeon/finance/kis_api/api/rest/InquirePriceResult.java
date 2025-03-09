@@ -1,11 +1,13 @@
-package com.youhogeon.finance.kis_api.api;
+package com.youhogeon.finance.kis_api.api.rest;
+
+import com.youhogeon.finance.kis_api.api.CommonRestResult;
 
 import lombok.Getter;
 import lombok.ToString;
 
 @Getter
 @ToString(callSuper = true)
-public class InquirePriceResponse extends CommonRestResponse {
+public class InquirePriceResult extends CommonRestResult {
 
     private String rtCd;
     private String msgCd;

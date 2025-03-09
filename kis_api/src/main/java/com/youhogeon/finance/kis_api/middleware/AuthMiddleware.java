@@ -15,10 +15,10 @@ import com.youhogeon.finance.kis_api.api.annotation.auth.AppKeyRequired;
 import com.youhogeon.finance.kis_api.api.annotation.auth.AppSecretRequired;
 import com.youhogeon.finance.kis_api.api.annotation.auth.AppTokenRequired;
 import com.youhogeon.finance.kis_api.api.annotation.auth.ApprovalKeyRequired;
-import com.youhogeon.finance.kis_api.api.GetSocketApprovalKeyRequest;
-import com.youhogeon.finance.kis_api.api.GetSocketApprovalKeyResponse;
-import com.youhogeon.finance.kis_api.api.GetTokenRequest;
-import com.youhogeon.finance.kis_api.api.GetTokenResponse;
+import com.youhogeon.finance.kis_api.api.rest.auth.GetSocketApprovalKeyApi;
+import com.youhogeon.finance.kis_api.api.rest.auth.GetSocketApprovalKeyResult;
+import com.youhogeon.finance.kis_api.api.rest.auth.GetTokenApi;
+import com.youhogeon.finance.kis_api.api.rest.auth.GetTokenResult;
 import com.youhogeon.finance.kis_api.client.NetworkClient;
 import com.youhogeon.finance.kis_api.client.NetworkRequest;
 import com.youhogeon.finance.kis_api.config.Configuration;
@@ -129,8 +129,8 @@ public class AuthMiddleware implements Middleware {
             }
 
             ApiContext authContext = new ApiContext(credentials);
-            GetSocketApprovalKeyRequest req = new GetSocketApprovalKeyRequest();
-            GetSocketApprovalKeyResponse resp = client.execute(req, authContext);
+            GetSocketApprovalKeyApi req = new GetSocketApprovalKeyApi();
+            GetSocketApprovalKeyResult resp = client.execute(req, authContext);
 
             return Pair.of(currentClient, resp.getApprovalKey());
         });
@@ -178,8 +178,8 @@ public class AuthMiddleware implements Middleware {
             // fetch token
             ApiContext authContext = new ApiContext(credentials);
 
-            GetTokenRequest req = new GetTokenRequest();
-            GetTokenResponse resp = client.execute(req, authContext);
+            GetTokenApi req = new GetTokenApi();
+            GetTokenResult resp = client.execute(req, authContext);
 
             // save token to cache
             LocalDateTime expiredAt = DateUtil.toLocalDateTime(resp.getAccessTokenTokenExpired());

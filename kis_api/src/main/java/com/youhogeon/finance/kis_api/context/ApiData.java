@@ -14,20 +14,17 @@ import lombok.NonNull;
 @Getter
 public class ApiData {
 
+    private Map<String, Object> body;
+
+    private Map<String, Object> headers;
+
+    private Map<String, Object> parameters;
+
     @NonNull
     private String method;
 
     @NonNull
     private String urlPath;
-
-    @NonNull
-    private Map<String, Object> body;
-
-    @NonNull
-    private Map<String, Object> headers;
-
-    @NonNull
-    private Map<String, Object> parameters;
 
     @NonNull
     private Class<? extends ApiResult> responseClass;

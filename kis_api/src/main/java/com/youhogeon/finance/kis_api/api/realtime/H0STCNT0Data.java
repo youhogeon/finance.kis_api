@@ -1,11 +1,12 @@
-package com.youhogeon.finance.kis_api.api;
+package com.youhogeon.finance.kis_api.api.realtime;
 
+import com.youhogeon.finance.kis_api.api.RealTimeApiData;
 import com.youhogeon.finance.kis_api.api.annotation.Seq;
 
 import lombok.Getter;
 
 @Getter
-public class H0STCNT0Data implements LiveApiData {
+public class H0STCNT0Data implements RealTimeApiData {
 
     // 유가증권 단축 종목코드
     @Seq(1)
