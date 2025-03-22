@@ -150,11 +150,17 @@ WebSocket API는 , Result Class 외에 Data Class(실시간 수신받는 데이�
         credentials.setRestLimitPerSecond(10);
         ```
 * 실시간 API
-    * 초당 호출 수 제한은 없습니다.
+    * 초당 호출 수 제한은 없습니다. (따라서 해당 기능도 없습니다.)
     * 데이터 최대 수신 건수(기본 41건)를 초과한 요청 발생 시 예외 발생합니다.
 
 #### 예외는 어떻게 처리해야 하나요?
 * 모든 예외는 `KisClientException` (Unchecked Exception) 의 자식 타입입니다.
 * 예외 처리 필요 시 try-catch 사용하시길 바랍니다.
 
-#### 
+#### Thread-safe 한가요?
+* 네
+
+### Roadmap (TODO List)
+* 예외 타입 세분화
+* 일관성있는 로깅
+* 테스트 커버리지 확대

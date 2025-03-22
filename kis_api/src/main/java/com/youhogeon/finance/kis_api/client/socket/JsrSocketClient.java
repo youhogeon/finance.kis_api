@@ -316,7 +316,7 @@ public class JsrSocketClient extends SocketClient {
             body = StringUtil.decryptAes256(body, aesKey, ivKey);
         }
 
-        String[] splited = StringUtil.fastSplit(body, '|');
+        String[] splited = StringUtil.fastSplit(body, '^');
 
         if (splited.length % size != 0) {
             logger.error("Invalid body size: {}", body);

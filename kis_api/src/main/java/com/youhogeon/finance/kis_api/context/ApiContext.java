@@ -12,24 +12,36 @@ import lombok.RequiredArgsConstructor;
 
 /**
  * API 요청에 대한 정보를 담은 객체
- *
- * @param credentials 인증 정보
- * @param apiData Api 객체에서 추출한 데이터(Api Class를 파싱한 정보를 바탕으로)를 담은 객체
- * @param request 서버에 요청 보낼 데이터를 담은 객체
- * @param response 서버로부터 응답 받은 데이터를 담은 객체
- * @param apiResult 최종적으롭 반환될 데이터를 담은 객체
  */
 @Data
 @RequiredArgsConstructor
 public class ApiContext {
 
-    NetworkClient networkClient;
-    @NonNull Credentials credentials;
+    private NetworkClient networkClient;
 
-    ApiData apiData;
-    NetworkRequest request;
+    /**
+     * 인증 정보
+     */
+    private @NonNull Credentials credentials;
 
-    NetworkResponse response;
-    ApiResult apiResult;
+    /**
+     * Api Class에서 추출한 데이터를 담은 객체
+     */
+    private ApiData apiData;
+
+    /**
+     * 서버에 요청 보낼 데이터를 담은 객체
+     */
+    private NetworkRequest request;
+
+    /**
+     * 서버로부터 응답 받은 데이터를 담은 객체
+     */
+    private NetworkResponse response;
+
+    /**
+     * 최종적으로 반환될 데이터를 담은 객체
+     */
+    private ApiResult apiResult;
 
 }

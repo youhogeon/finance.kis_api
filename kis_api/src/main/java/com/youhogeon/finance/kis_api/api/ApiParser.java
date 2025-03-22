@@ -74,7 +74,7 @@ public class ApiParser {
     }
 
     private LinkedHashMap<String, Object> getFieldsByAnnotation(Class<? extends Annotation> annotationClass) {
-        LinkedHashMap<String, Object> headers = new LinkedHashMap<>();
+        LinkedHashMap<String, Object> values = new LinkedHashMap<>();
         Field[] fields = ReflectionUtil.getAllFields(clazz);
 
         for (Field field : fields) {
@@ -84,7 +84,7 @@ public class ApiParser {
                 continue;
             }
 
-            String key = null;
+            String key = field.getName();
 
             if (annotation instanceof Header) {
                 key = ((Header) annotation).value();
@@ -99,15 +99,15 @@ public class ApiParser {
             try {
                 field.setAccessible(true);
 
-                Object headerValue = field.get(apiRequest);
+                Object value = field.get(apiRequest);
 
-                headers.put(key, headerValue);
+                values.put(key, value);
             } catch (IllegalAccessException e) {
                 throw new InvalidApiSpecException("Failed to access field: " + field.getName());
             }
         }
 
-        return headers;
+        return values;
     }
 
     private <T extends ApiResult> Class<T> getGenericType(Api<T> api) {

@@ -14,28 +14,25 @@ public class RateLimiter {
     }
 
     public void acquire() {
-        while (true) { // 재귀 대신 루프 사용
+        while (true) {
             synchronized (this) {
                 long now = System.currentTimeMillis();
 
-                // 1초를 벗어난 오래된 요청 제거
+                // 오래된 요청 제거
                 while (!requestTimestamps.isEmpty() && requestTimestamps.peek() <= now - windowSizeInMillis) {
                     requestTimestamps.poll();
                 }
-
-                // 허용된 요청 개수보다 적으면 진행
                 if (requestTimestamps.size() < limit) {
                     requestTimestamps.add(now);
-                    return; // 요청 허용 후 종료
+                    return;
                 }
 
-                // 초과 시 대기 시간 계산
                 long earliestRequest = requestTimestamps.peek();
                 long waitTime = windowSizeInMillis - (now - earliestRequest);
 
                 if (waitTime > 0) {
                     try {
-                        this.wait(waitTime); // Thread.sleep() 대신 wait() 사용
+                        this.wait(waitTime);
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
                         throw new RuntimeException("Thread interrupted", e);
