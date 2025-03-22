@@ -10,6 +10,14 @@
     * 연결, 데이터 구독·해제 관리
 * API 정의 작성만으로 API 호출 가능하도록 지원
 
+## 설치(의존성 추가)
+### Gradle (Groovy)
+```groovy
+dependencies {
+    implementation group: 'com.youhogeon.finance', name: 'kis_api', version: '<latest version>'
+}
+```
+
 ## 사용자 가이드
 ### 1️⃣Client 객체 초기화
 ```java
@@ -20,7 +28,7 @@ config.addCredentials(new Credentials("KEY", "SECRET")); // 계좌 AppKey, AppSe
 KisClient client = new KisClient(config);
 ```
 
-#### 다중 계좌인 경우
+#### (Optional) 다중 계좌인 경우
 ```java
 Credentials c1 = new Credentials("KEY", "SECRET");
 Credentials c2 = new Credentials("KEY", "SECRET");
