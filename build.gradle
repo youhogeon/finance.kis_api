@@ -1,0 +1,56 @@
+plugins {
+    id 'base'
+    id 'maven-publish'
+    id 'org.jreleaser' version '1.17.0'
+}
+
+version = System.getenv("VERSION")
+
+allprojects {
+    group = 'com.youhogeon.finance'
+
+    repositories {
+        mavenCentral()
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "LocalMavenWithChecksums"
+            url = uri(layout.buildDirectory.dir("staging-deploy"))
+        }
+
+        maven {
+            name = "PreDeploy"
+            url = uri(layout.buildDirectory.dir("pre-deploy"))
+        }
+    }
+}
+
+jreleaser {
+    gitRootSearch = true
+    project {
+        copyright = 'www.youhogeon.com'
+        description= '금융 프로젝트'
+    }
+    deploy {
+        maven {
+            mavenCentral {
+                sonatype {
+                    sign = false
+                    active = 'ALWAYS'
+                    url = 'https://central.sonatype.com/api/v1/publisher'
+                    username = findProperty("mavenCentralUsername") ?: System.getenv("MAVEN_CENTRAL_USERNAME")
+                    password = findProperty("mavenCentralPassword") ?: System.getenv("MAVEN_CENTRAL_PASSWORD")
+                    stagingRepository('build/pre-deploy')
+                }
+            }
+        }
+    }
+    release {
+        github {
+            enabled = false
+        }
+    }
+}
