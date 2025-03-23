@@ -14,11 +14,16 @@
 ### Gradle (Groovy)
 ```groovy
 dependencies {
+    implementation group: 'com.youhogeon.finance', name: 'kis_client', version: '<latest version>'
     implementation group: 'com.youhogeon.finance', name: 'kis_api', version: '<latest version>'
 }
 ```
 
-## 사용자 가이드
+* kis_client : 코어 라이브러리 (필수)
+* kis_api : `사전 정의된 API Definition`이 담긴 라이브러리 (대부분의 경우 필수)
+    ※ `사전 정의된 API Definition`을 사용하지 않고 모든 API를 직접 정의(`사용자 정의 API Definition`)하여 사용하고자 하는 경우 `kis_api`는 불필요합니다.
+
+## 라이브러리 사용 가이드
 ### 1️⃣Client 객체 초기화
 ```java
 Configuration config = new Configuration();
@@ -81,11 +86,11 @@ resp.addHandler((response) -> {
 ```
 
 
-## 개발자 가이드
+## `사용자 정의 API Definition` 추가 가이드
 ### REST API 추가
 한국투자증권에서 제공하는 모든 API를 본 라이브러리에서 지원하는 것이 목표이나, 현재 모든 API가 정의되어있지는 않습니다.
 
-대신 아래와 같이 (라이브러리 사용자가 직접) API SPEC을 정의한 class를 만들어서 사용할 수 있도록 설계되었습니다.
+대신 아래와 같이 (라이브러리 사용자가 직접) API Definition을 정의한 class(`사용자 정의 API Definition`)를 만들어서 사용할 수 있도록 설계되었습니다.
 
 Api Class, Api Result Class 두 개의 클래스 모두 작성해야 합니다.
 
