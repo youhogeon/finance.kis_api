@@ -5,3 +5,4 @@ plugins {
 rootProject.name = "app"
 
 include "kis_api"
+include "kis_client"

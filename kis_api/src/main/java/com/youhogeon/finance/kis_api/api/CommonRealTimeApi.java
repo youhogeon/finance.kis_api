@@ -1,10 +1,9 @@
 package com.youhogeon.finance.kis_api.api;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 import com.youhogeon.finance.kis_api.api.annotation.Body;
 import com.youhogeon.finance.kis_api.api.annotation.Header;
 import com.youhogeon.finance.kis_api.api.annotation.auth.ApprovalKeyRequired;
+import com.youhogeon.finance.kis_api.api.realtime.TransactionType;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -14,38 +13,6 @@ import lombok.Setter;
 @Setter
 @ApprovalKeyRequired(location = ApprovalKeyRequired.Location.HEADER)
 public abstract class CommonRealTimeApi<T extends ApiResult> implements Api<T> {
-
-    public enum TransactionType {
-        SUBSCRIBE("1"),
-        UNSUBSCRIBE("2");
-
-        private String value;
-
-        TransactionType(String value) {
-            this.value = value;
-        }
-
-        @JsonValue
-        public String getValue() {
-            return value;
-        }
-
-        @JsonCreator
-        public static TransactionType forValue(String value) {
-            for (TransactionType t : TransactionType.values()) {
-                if (t.value.equals(value)) {
-                    return t;
-                }
-            }
-
-            throw new IllegalArgumentException("Unknown value: " + value);
-        }
-
-        @Override
-        public String toString() {
-            return value;
-        }
-    }
 
     public CommonRealTimeApi(String trId, String trKey) {
         this.trId = trId;

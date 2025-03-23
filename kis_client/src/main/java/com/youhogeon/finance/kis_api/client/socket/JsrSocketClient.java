@@ -15,8 +15,8 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.youhogeon.finance.kis_api.api.CommonRealTimeApi;
 import com.youhogeon.finance.kis_api.api.RealTimeApiData;
+import com.youhogeon.finance.kis_api.api.realtime.TransactionType;
 import com.youhogeon.finance.kis_api.config.Configuration;
 import com.youhogeon.finance.kis_api.context.ApiContext;
 import com.youhogeon.finance.kis_api.context.ApiData;
@@ -260,7 +260,7 @@ public class JsrSocketClient extends SocketClient {
                         return;
                     }
 
-                    unsubscribeRequest.getHeaders().put("tr_type", CommonRealTimeApi.TransactionType.UNSUBSCRIBE); // unsubscribe
+                    unsubscribeRequest.getHeaders().put("tr_type", TransactionType.UNSUBSCRIBE); // unsubscribe
 
                     sendMessage(key, unsubscribeRequest);
                     subscribers.remove(key);

@@ -10,7 +10,10 @@ java {
 }
 
 dependencies {
-    compileOnly project(':kis_client')
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.18.3'
+    implementation group: 'jakarta.websocket', name: 'jakarta.websocket-client-api', version: '2.2.0'
+    implementation group: 'org.glassfish.tyrus.bundles', name: 'tyrus-standalone-client', version: '2.2.0'
+    implementation 'org.slf4j:slf4j-api:2.0.17'
 
     compileOnly 'org.projectlombok:lombok:1.18.36'
     annotationProcessor 'org.projectlombok:lombok:1.18.36'
@@ -18,8 +21,8 @@ dependencies {
     testImplementation libs.junit.jupiter
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-    testImplementation 'org.slf4j:slf4j-api:2.0.17'
     testImplementation 'ch.qos.logback:logback-classic:1.5.17'
+    testImplementation project(':kis_api')
 }
 
 tasks.named('test') {
@@ -38,7 +41,7 @@ tasks.register('javadocJar', Jar) {
 
 publishing {
     publications {
-        KISAPI(MavenPublication) {
+        KISClient(MavenPublication) {
             from components.java
 
             artifact tasks.sourcesJar
@@ -47,8 +50,8 @@ publishing {
             artifactId = "${project.projectDir.name}"
 
             pom {
-                name = 'KIS API Definition'
-                description = 'KIS(한국투자증권) API Definition. kis_client를 통해 요청 시 사용합니다.'
+                name = 'KIS API Java Warpper'
+                description = 'KIS(한국투자증권) API 호출 위한 Java Library. API Definition을 직접 정의하여 호출하거나, kis_api artifact를 통해 사전 정의된 API를 호출 가능.'
                 url = 'https://github.com/youhogeon/finance.kis_api'
                 licenses {
                     license {
@@ -74,5 +77,5 @@ publishing {
 }
 
 signing {
-    sign publishing.publications.KISAPI
+    sign publishing.publications.KISClient
 }
