@@ -5,6 +5,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -95,6 +96,8 @@ public class ReflectionUtil {
                         field.set(obj, Long.parseLong(value));
                     } else if (type.equals(double.class) || type.equals(Double.class)) {
                         field.set(obj, Double.parseDouble(value));
+                    } else if (Number.class.isAssignableFrom(type)) {
+                        field.set(obj, new BigDecimal(value));
                     } else {
                         field.set(obj, value);
                     }
