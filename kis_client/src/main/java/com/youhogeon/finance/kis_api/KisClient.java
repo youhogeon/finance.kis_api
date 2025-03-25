@@ -115,16 +115,19 @@ public class KisClient {
     private <T extends ApiResult> T _execute(Api<T> api, ApiContext context) {
         ApiParser parser = new ApiParser(api);
         ApiData data = parser.parse();
-
-        NetworkClient client = getClient(data);
-        NetworkRequest request = client.makeRequest(data);
-
         context.setApiData(data);
+
+        for(Middleware middleware : this.middlewares) {
+           middleware.afterInit(this, context);
+        }
+
+        NetworkClient client = this.getClient(data);
+        NetworkRequest request = client.makeRequest(data);
         context.setNetworkClient(client);
         context.setRequest(request);
 
-        for (Middleware middleware : middlewares) {
-            middleware.before(this, context);
+        for(Middleware middleware : this.middlewares) {
+           middleware.before(this, context);
         }
 
         try {

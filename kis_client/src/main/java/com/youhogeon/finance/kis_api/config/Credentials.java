@@ -14,6 +14,9 @@ public class Credentials {
     private String appToken;
     private String approvalKey;
 
+    private String accountNo;
+    private String accountProductCode;
+
     /**
      * 초당 허용 요청 수 (한국투자증권에서 제공하는 유량)
      *
@@ -31,6 +34,13 @@ public class Credentials {
     public Credentials(String apiKey, String apiSecret) {
         this.appKey = apiKey;
         this.appSecret = apiSecret;
+    }
+
+    public Credentials(String apiKey, String apiSecret, String accountNo, String accountProductCode) {
+       this.appKey = apiKey;
+       this.appSecret = apiSecret;
+       this.accountNo = accountNo;
+       this.accountProductCode = accountProductCode;
     }
 
     public boolean equals(Object obj) {

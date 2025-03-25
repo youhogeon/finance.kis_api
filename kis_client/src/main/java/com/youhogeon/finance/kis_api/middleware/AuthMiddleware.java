@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.youhogeon.finance.kis_api.KisClient;
+import com.youhogeon.finance.kis_api.api.annotation.auth.AccountRequired;
 import com.youhogeon.finance.kis_api.api.annotation.auth.AppKeyRequired;
 import com.youhogeon.finance.kis_api.api.annotation.auth.AppSecretRequired;
 import com.youhogeon.finance.kis_api.api.annotation.auth.AppTokenRequired;
@@ -36,6 +37,30 @@ public class AuthMiddleware implements Middleware {
     private final ConcurrentMap<Credentials, ReentrantLock> locks = new ConcurrentHashMap<>();
 
     private final ConcurrentMap<Credentials, Pair<NetworkClient, String>> approvalKeys = new ConcurrentHashMap<>();
+
+    @Override
+    public void afterInit(KisClient client, ApiContext context) {
+        ApiData apiData = context.getApiData();
+        Annotation[] annotations = apiData.getAnnotations();
+        Credentials credentials = client.getConfig().getCredentials();
+
+        for(AccountRequired anno : AnnotationUtil.getAnnotations(annotations, AccountRequired.class)) {
+            Map<String, Object> data = null;
+
+            if (anno.location() == AccountRequired.Location.HEADER) {
+                data = apiData.getHeaders();
+            } else if (anno.location() == AccountRequired.Location.BODY) {
+                data = apiData.getBody();
+            } else if (anno.location() == AccountRequired.Location.PARAMETER) {
+                data = apiData.getParameters();
+            }
+
+            if (data != null) {
+                data.put(anno.key1(), credentials.getAccountNo());
+                data.put(anno.key2(), credentials.getAccountProductCode());
+            }
+        }
+    }
 
     @Override
     public void before(KisClient client, ApiContext context) {

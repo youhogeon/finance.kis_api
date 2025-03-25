@@ -14,6 +14,11 @@ public class RateLimitingMiddleware implements Middleware {
     private final ConcurrentMap<Credentials, RateLimiter> rateLimiters = new ConcurrentHashMap<>();
 
     @Override
+    public void afterInit(KisClient client, ApiContext context) {
+
+    }
+
+    @Override
     public void before(KisClient client, ApiContext context) {
         if (!(context.getRequest() instanceof HttpClientRequest)) {
             return;
