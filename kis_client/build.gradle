@@ -22,7 +22,6 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     testImplementation 'ch.qos.logback:logback-classic:1.5.17'
-    testImplementation project(':kis_api')
 }
 
 tasks.named('test') {
