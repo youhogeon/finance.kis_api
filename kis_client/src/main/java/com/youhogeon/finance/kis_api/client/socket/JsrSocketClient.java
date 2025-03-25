@@ -331,7 +331,9 @@ public class JsrSocketClient extends SocketClient {
 
     @Override
     public void close() throws IOException {
-        session.close();
+        if (this.session != null) {
+            this.session.close();
+        }
     }
 
     @Override
