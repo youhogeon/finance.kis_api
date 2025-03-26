@@ -133,7 +133,7 @@ public class KisClient {
         try {
             client.execute(context);
         } catch (IOException e) {
-            throw new InvalidApiRequestException("Failed to get response from server. (" + e.getMessage() + ")");
+            throw new InvalidApiRequestException("Failed to get response from server. (" + e.getMessage() + ")", e);
         }
 
         for (Middleware middleware : middlewares) {

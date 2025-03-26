@@ -6,10 +6,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.youhogeon.finance.kis_api.middleware.Middleware;
+
 import lombok.Getter;
 import lombok.Setter;
-
-import com.youhogeon.finance.kis_api.middleware.Middleware;
 
 /**
  * API 설정
@@ -29,6 +29,13 @@ public class Configuration {
     @Getter
     @Setter
     private Duration httpTimeout = Duration.ofSeconds(10);
+
+    /**
+     * HTTP Timeout 재시도 횟수
+     */
+    @Getter
+    @Setter
+    private int httpTimeoutMaxRetries = 5;
 
     /**
      * Socket API 호스트 주소

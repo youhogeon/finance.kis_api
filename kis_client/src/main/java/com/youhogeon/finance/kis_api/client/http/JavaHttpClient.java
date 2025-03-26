@@ -5,6 +5,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.http.HttpResponse;
+import java.net.http.HttpTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -59,6 +60,29 @@ public class JavaHttpClient extends com.youhogeon.finance.kis_api.client.http.Ht
             .build();
     }
 
+    public HttpResponse<String> requestWithRetry(HttpClientRequest request) throws IOException, InterruptedException {
+        int attempt = 0;
+        int maxAttempt = config.getHttpTimeoutMaxRetries();
+
+        while (true) {
+            try {
+                if (request.getMethod() == "POST") {
+                    return POST(request);
+                } else {
+                    return GET(request);
+                }
+            } catch (HttpTimeoutException e) {
+                if (++attempt >= maxAttempt) {
+                    throw e;
+                }
+
+                Thread.sleep(10);
+
+                logger.debug("Request timeout. Retry. [{} / {}]", attempt, maxAttempt);
+            }
+        }
+    }
+
     @Override
     public void execute(ApiContext context) throws IOException {
         HttpClientRequest request = (HttpClientRequest)context.getRequest();
@@ -67,11 +91,7 @@ public class JavaHttpClient extends com.youhogeon.finance.kis_api.client.http.Ht
         HttpResponse<String> response = null;
 
         try {
-            if (request.getMethod() == "POST") {
-                response = POST(request);
-            } else {
-                response = GET(request);
-            }
+            response = requestWithRetry(request);
         } catch (IOException e) {
             throw e;
         } catch (InterruptedException e) {

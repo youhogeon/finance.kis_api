@@ -13,6 +13,11 @@ public class InvalidApiRequestException extends KisClientException {
 
         this.message = message;
     }
+    public InvalidApiRequestException(String message, Exception e){
+        super(message, e);
+
+        this.message = message;
+    }
 
     public InvalidApiRequestException(String message, int statusCode){
         super(message + "[status code : " + statusCode + "]");
