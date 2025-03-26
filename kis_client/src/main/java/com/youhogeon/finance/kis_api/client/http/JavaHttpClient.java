@@ -86,10 +86,10 @@ public class JavaHttpClient extends com.youhogeon.finance.kis_api.client.http.Ht
         int statusCode = response.statusCode();
         Map<String, List<String>> headers = response.headers().map();
 
-        if (logger.isDebugEnabled()) {
+        if (logger.isTraceEnabled()) {
             String maskedResponseString = config.isMaskCredentials() ? CredentialsUtil.maskAccessToken(responseString) : responseString;
 
-            logger.debug("API Request ends. [{}] {} -> ({}) {}", api.getClass().getSimpleName(), request, statusCode, maskedResponseString);
+            logger.trace("API Request ends. [{}] {} -> ({}) {}", api.getClass().getSimpleName(), request, statusCode, maskedResponseString);
         }
 
         if (responseString == null) {

@@ -101,7 +101,7 @@ public class JsrSocketClient extends SocketClient {
 
     @OnMessage
     public void onMessage(String message) {
-        logger.debug("Data received from WebSocket: {}", message);
+        logger.trace("Data received from WebSocket: {}", message);
 
         if (isDataResponse(message)) {
             processDataMessage(message);
@@ -136,7 +136,7 @@ public class JsrSocketClient extends SocketClient {
         ensureConnected();
 
         try {
-            logger.debug("Trying to send a message over WebSocket: {}", message);
+            logger.trace("Trying to send a message over WebSocket: {}", message);
 
             session.getBasicRemote().sendText(message);
 

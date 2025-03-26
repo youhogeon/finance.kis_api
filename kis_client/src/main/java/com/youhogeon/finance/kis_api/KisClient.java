@@ -77,7 +77,7 @@ public class KisClient {
     }
 
     public <T extends ApiResult> T execute(Api<T> api, ApiContext context) {
-        logger.debug("API Request begins [{}]", api.getClass().getSimpleName());
+        logger.trace("API Request begins [{}]", api.getClass().getSimpleName());
 
         try {
             return _execute(api, context);
