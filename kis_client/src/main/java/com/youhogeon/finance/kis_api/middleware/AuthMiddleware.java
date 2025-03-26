@@ -22,10 +22,10 @@ import com.youhogeon.finance.kis_api.api.rest.auth.GetTokenApi;
 import com.youhogeon.finance.kis_api.api.rest.auth.GetTokenResult;
 import com.youhogeon.finance.kis_api.client.NetworkClient;
 import com.youhogeon.finance.kis_api.client.NetworkRequest;
-import com.youhogeon.finance.kis_api.config.Configuration;
 import com.youhogeon.finance.kis_api.config.Credentials;
 import com.youhogeon.finance.kis_api.context.ApiContext;
 import com.youhogeon.finance.kis_api.context.ApiData;
+import com.youhogeon.finance.kis_api.exception.InvalidApiRequestException;
 import com.youhogeon.finance.kis_api.util.AnnotationUtil;
 import com.youhogeon.finance.kis_api.util.CredentialsUtil;
 import com.youhogeon.finance.kis_api.util.DateUtil;
@@ -42,7 +42,7 @@ public class AuthMiddleware implements Middleware {
     public void afterInit(KisClient client, ApiContext context) {
         ApiData apiData = context.getApiData();
         Annotation[] annotations = apiData.getAnnotations();
-        Credentials credentials = client.getConfig().getCredentials();
+        Credentials credentials = context.getCredentials();
 
         for(AccountRequired anno : AnnotationUtil.getAnnotations(annotations, AccountRequired.class)) {
             Map<String, Object> data = null;
@@ -56,6 +56,10 @@ public class AuthMiddleware implements Middleware {
             }
 
             if (data != null) {
+                if (credentials.getAccountNo() == null || credentials.getAccountProductCode() == null) {
+                    throw new InvalidApiRequestException("Account information is required");
+                }
+
                 data.put(anno.key1(), credentials.getAccountNo());
                 data.put(anno.key2(), credentials.getAccountProductCode());
             }
@@ -67,7 +71,7 @@ public class AuthMiddleware implements Middleware {
         NetworkRequest request = context.getRequest();
 
         ApiData apiData = context.getApiData();
-        Credentials credentials = client.getConfig().getCredentials();
+        Credentials credentials = context.getCredentials();
 
         boolean maskCredentials = client.getConfig().isMaskCredentials();
 
@@ -139,8 +143,7 @@ public class AuthMiddleware implements Middleware {
     }
 
     private String getApprovalKey(KisClient client, ApiContext context) {
-        Configuration config = client.getConfig();
-        Credentials credentials = config.getCredentials();
+        Credentials credentials = context.getCredentials();
 
         if (credentials.getApprovalKey() != null) {
             return credentials.getApprovalKey();
@@ -180,8 +183,7 @@ public class AuthMiddleware implements Middleware {
     }
 
     private String getAppToken(KisClient client, ApiContext context) {
-        Configuration config = client.getConfig();
-        Credentials credentials = config.getCredentials();
+        Credentials credentials = context.getCredentials();
 
         if (credentials.getAppToken() != null) {
             return credentials.getAppToken();
