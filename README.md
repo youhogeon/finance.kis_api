@@ -18,14 +18,22 @@ dependencies {
     implementation group: 'com.youhogeon.finance', name: 'kis_api', version: '<latest version>'
 }
 ```
-latest version(release 목록)은 아래에서 확인 가능합니다.
-* [kis_client](https://github.com/youhogeon/finance.kis_api/releases?q=kis_client)
-* [kis_api](https://github.com/youhogeon/finance.kis_api/releases?q=kis_api)
 
-kis_client와 kis_api가 나뉘어져있고 각기 다른 버전을 가짐에 주의하세요.
+### Artifacts
 * kis_client : 코어 라이브러리 (필수)
 * kis_api : `사전 정의된 API Definition`이 담긴 라이브러리 (대부분의 경우 필수)
-    * `사전 정의된 API Definition`을 사용하지 않고 모든 API를 직접 정의(`사용자 정의 API Definition`)하여 사용하고자 하는 경우 `kis_api`는 불필요합니다.
+    * `사전 정의된 API Definition`을 사용하지 않고 모든 API를 직접 정의([`사용자 정의 API Definition`](#사용자-정의-api-definition-추가-가이드) 참고)하여 사용하고자 하는 경우 `kis_api`는 불필요합니다.
+
+### 버전 선택 가이드
+* 더 유연한 업데이트를 위해 `kis_client`와 `kis_api` artifact는 각기 다른 버전을 가집니다.
+* 버전(`ver. x.y.z`)의 첫 번째(`x`), 두 번째 자리(`y`)가 일치하는 경우에만 호환성이 보장됩니다.
+    * (ex) `kis_client:0.3.0`과 `kis_api:0.3.11`은 호환됩니다.
+    * (ex) `kis_client:0.2.1`과 `kis_api:0.3.7`은 호환되지 않습니다.
+* latest version(release 목록)은 아래에서 확인 가능합니다.
+    * [kis_client](https://github.com/youhogeon/finance.kis_api/releases?q=kis_client)
+    * [kis_api](https://github.com/youhogeon/finance.kis_api/releases?q=kis_api)
+
+
 
 ## 라이브러리 사용 가이드
 ### 1️⃣ Client 객체 생성
