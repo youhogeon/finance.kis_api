@@ -2,7 +2,9 @@ package com.youhogeon.finance.kis_api.api;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 import com.youhogeon.finance.kis_api.api.annotation.Body;
 import com.youhogeon.finance.kis_api.api.annotation.Header;
@@ -20,7 +22,8 @@ public class ApiParser {
     private Api<?> apiRequest;
     private Class<?> clazz;
 
-    // private Map<String, ApiData> cache = new HashMap<>();
+    private static Map<Class<?>, Pair<String, String>> urlPathCache = new HashMap<>();
+    private static Map<Class<?>, HashMap<Class<? extends Annotation>, LinkedHashMap<String, Field>>> fieldCache = new HashMap<>();
 
     public ApiParser(Api<?> apiRequest) {
         this.apiRequest = apiRequest;
@@ -41,17 +44,67 @@ public class ApiParser {
             .build();
     }
 
+    private HashMap<Class<? extends Annotation>, LinkedHashMap<String, Field>> inspectFields() {
+        if (fieldCache.containsKey(clazz)) {
+            return fieldCache.get(clazz);
+        }
+
+        Field[] fields = ReflectionUtil.getAllFields(clazz);
+
+        HashMap<Class<? extends Annotation>, LinkedHashMap<String, Field>> result = new HashMap<>();
+
+        LinkedHashMap<String, Field> headers = new LinkedHashMap<>();
+        LinkedHashMap<String, Field> parameters = new LinkedHashMap<>();
+        LinkedHashMap<String, Field> body = new LinkedHashMap<>();
+
+        for (Field field : fields) {
+            Annotation[] annotation = field.getAnnotations();
+
+            for (Annotation a : annotation) {
+                if (a instanceof Header) {
+                    headers.put(((Header) a).value(), field);
+                } else if (a instanceof Parameter) {
+                    parameters.put(((Parameter) a).value(), field);
+                } else if (a instanceof Body) {
+                    body.put(((Body) a).value(), field);
+                } else {
+                    continue;
+                }
+
+                field.setAccessible(true);
+            }
+        }
+
+        result.put(Header.class, headers);
+        result.put(Parameter.class, parameters);
+        result.put(Body.class, body);
+
+        fieldCache.put(clazz, result);
+
+        return result;
+    }
+
     private Pair<String, String> getUrlPath() {
+        if (urlPathCache.containsKey(clazz)) {
+            return urlPathCache.get(clazz);
+        }
+
         RestApi restApi = clazz.getAnnotation(RestApi.class);
 
         if (restApi != null) {
-            return Pair.of(restApi.method().name(), restApi.path());
+            Pair<String, String> urlPath = Pair.of(restApi.method().name(), restApi.path());
+            urlPathCache.put(clazz, urlPath);
+
+            return urlPath;
         }
 
         RealTimeApi realTimeApi = clazz.getAnnotation(RealTimeApi.class);
 
         if (realTimeApi != null) {
-            return Pair.of("WS", realTimeApi.path());
+            Pair<String, String> urlPath = Pair.of("WS", realTimeApi.path());
+            urlPathCache.put(clazz, urlPath);
+
+            return urlPath;
         }
 
         throw new InvalidApiSpecException("Api class must have RestApi or RealTimeApi annotation");
@@ -74,37 +127,17 @@ public class ApiParser {
     }
 
     private LinkedHashMap<String, Object> getFieldsByAnnotation(Class<? extends Annotation> annotationClass) {
+        HashMap<Class<? extends Annotation>, LinkedHashMap<String, Field>> allFields = inspectFields();
+        LinkedHashMap<String, Field> fields = allFields.get(annotationClass);
+
         LinkedHashMap<String, Object> values = new LinkedHashMap<>();
-        Field[] fields = ReflectionUtil.getAllFields(clazz);
 
-        for (Field field : fields) {
-            Annotation annotation = field.getAnnotation(annotationClass);
-
-            if (annotation == null) {
-                continue;
+        try {
+            for (Map.Entry<String, Field> item : fields.entrySet()) {
+                values.put(item.getKey(), item.getValue().get(apiRequest));
             }
-
-            String key = field.getName();
-
-            if (annotation instanceof Header) {
-                key = ((Header) annotation).value();
-            } else if (annotation instanceof Parameter) {
-                key = ((Parameter) annotation).value();
-            } else if (annotation instanceof Body) {
-                key = ((Body) annotation).value();
-            } else {
-                continue;
-            }
-
-            try {
-                field.setAccessible(true);
-
-                Object value = field.get(apiRequest);
-
-                values.put(key, value);
-            } catch (IllegalAccessException e) {
-                throw new InvalidApiSpecException("Failed to access field: " + field.getName());
-            }
+        } catch (IllegalAccessException e) {
+            throw new InvalidApiSpecException("Failed to access Api class field");
         }
 
         return values;

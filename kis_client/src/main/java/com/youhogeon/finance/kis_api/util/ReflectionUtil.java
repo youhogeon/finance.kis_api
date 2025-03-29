@@ -8,15 +8,22 @@ import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.youhogeon.finance.kis_api.api.annotation.Seq;
 
 public class ReflectionUtil {
 
+    private static Map<Class<?>, Field[]> fieldsCache = new HashMap<>();
     public static Field[] getAllFields(Class<?> clazz) {
         if (clazz == null) {
             return new Field[0];
+        }
+
+        if (fieldsCache.containsKey(clazz)) {
+            return fieldsCache.get(clazz);
         }
 
         Field[] fields = clazz.getDeclaredFields();
@@ -26,6 +33,8 @@ public class ReflectionUtil {
         Field[] allFields = new Field[fields.length + parentFields.length];
         System.arraycopy(fields, 0, allFields, 0, fields.length);
         System.arraycopy(parentFields, 0, allFields, fields.length, parentFields.length);
+
+        fieldsCache.put(clazz, allFields);
 
         return allFields;
     }
@@ -111,32 +120,47 @@ public class ReflectionUtil {
         return objects;
     }
 
+    private static Map<Class<?>, Class<?>> genericCache = new HashMap<>();
+
     public static <T> Class<T> getGenericParameterType(Object instance) {
         return getGenericParameterType(instance, 0);
     }
 
     public static <T> Class<T> getGenericParameterType(Object instance, int index) {
-        Class<?> clazz = instance.getClass();
+        return getGenericParameterType(instance.getClass(), index);
+    }
+
+    public static <T> Class<T> getGenericParameterType(Class<?> clazz) {
+        return getGenericParameterType(clazz, 0);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> Class<T> getGenericParameterType(Class<?> clazz, int index) {
+        if (genericCache.containsKey(clazz)) {
+            return (Class<T>) genericCache.get(clazz);
+        }
 
         Type generic = clazz.getGenericSuperclass();
         if (generic instanceof ParameterizedType) {
             Class<T> type = extractType((ParameterizedType) generic, index);
             if (type != null) {
+                genericCache.put(clazz, type);
                 return type;
             }
         }
-
 
         Type[] interfaces = clazz.getGenericInterfaces();
         for (Type type : interfaces) {
             if (type instanceof ParameterizedType) {
                 Class<T> result = extractType((ParameterizedType) type, index);
                 if (result != null) {
+                    genericCache.put(clazz, result);
                     return result;
                 }
             }
         }
 
+        genericCache.put(clazz, null);
         return null;
     }
 
