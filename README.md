@@ -28,10 +28,9 @@ kis_client와 kis_api가 나뉘어져있고 각기 다른 버전을 가짐에 �
     * `사전 정의된 API Definition`을 사용하지 않고 모든 API를 직접 정의(`사용자 정의 API Definition`)하여 사용하고자 하는 경우 `kis_api`는 불필요합니다.
 
 ## 라이브러리 사용 가이드
-### 1️⃣Client 객체 초기화
+### 1️⃣ Client 객체 생성
 ```java
 Configuration config = new Configuration();
-
 config.addCredentials(new Credentials("KEY", "SECRET")); // 계좌 AppKey, AppSecret 등록
 
 KisClient client = new KisClient(config);
@@ -75,6 +74,21 @@ InquirePriceResult resp = client.execute(req);
 // InquirePriceResult resp = client.execute(req, "firstAccount");
 ```
 
+#### (Advanced) 연속 조회
+주식잔고조회(`InquireBalanceApi`)와 같이 한 번에 받아올 수 있는 데이터 수 제한이 있는 Api 경우, 연속 조회(다음 데이터 조회)가 필요합니다.\
+`result.next()`를 호출함으로써 다음 데이터를 편리하게 받아올 수 있습니다.
+```java
+// 주식현재가 시세
+InquireBalanceApi req = new InquireBalanceApi();
+InquireBalanceResult balance = client.execute(req);
+
+do {
+    System.out.println(balance);
+
+    balance = balance.next();
+} while (balance != null);
+```
+
 ### 3️⃣ WebSocket API 호출
 ```java
 // 실시간 체결가(KRX)
@@ -82,7 +96,7 @@ H0STCNT0Api req = new H0STCNT0Api(code);
 H0STCNT0Result resp = client.execute(req); // WebSocket API의 호출 반환값에는 데이터가 없고, 대신 addHandler 메서드를 통해 이후 수신받는 데이터에 접근 가능
 
 resp.addHandler((response) -> {
-    // do Something..
+    System.out.println(response); // 실시간 결과 수신
 });
 
 // resp.removeHandler(...) // 특정 handler 제거
