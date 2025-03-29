@@ -156,9 +156,8 @@ public class AuthMiddleware implements Middleware {
                 return existingPair;
             }
 
-            ApiContext authContext = new ApiContext(credentials);
             GetSocketApprovalKeyApi req = new GetSocketApprovalKeyApi();
-            GetSocketApprovalKeyResult resp = client.execute(req, authContext);
+            GetSocketApprovalKeyResult resp = client.execute(req, credentials);
 
             return Pair.of(currentClient, resp.getApprovalKey());
         });
@@ -203,10 +202,8 @@ public class AuthMiddleware implements Middleware {
             }
 
             // fetch token
-            ApiContext authContext = new ApiContext(credentials);
-
             GetTokenApi req = new GetTokenApi();
-            GetTokenResult resp = client.execute(req, authContext);
+            GetTokenResult resp = client.execute(req, credentials);
 
             // save token to cache
             LocalDateTime expiredAt = DateUtil.toLocalDateTime(resp.getAccessTokenTokenExpired());

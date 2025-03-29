@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import com.youhogeon.finance.kis_api.api.ApiResult;
 import com.youhogeon.finance.kis_api.api.annotation.Header;
 import com.youhogeon.finance.kis_api.config.Configuration;
+import com.youhogeon.finance.kis_api.config.Credentials;
 import com.youhogeon.finance.kis_api.context.ApiContext;
 import com.youhogeon.finance.kis_api.context.ApiData;
 import com.youhogeon.finance.kis_api.util.CredentialsUtil;
@@ -128,13 +129,13 @@ public class JavaHttpClient extends com.youhogeon.finance.kis_api.client.http.Ht
             .body(responseString)
             .build();
 
-        ApiResult apiResult = makeApiResult(clinetResponse, context.getApiData());
 
+        ApiResult apiResult = makeApiResult(context.getCredentials(), context.getApiData(), clinetResponse);
         context.setResponse(clinetResponse);
         context.setApiResult(apiResult);
     }
 
-    private ApiResult makeApiResult(HttpClientResponse clinetResponse, ApiData apiData) {
+    private ApiResult makeApiResult(Credentials credentials, ApiData apiData, HttpClientResponse clinetResponse) {
         String responseString = clinetResponse.getBody();
 
         ApiResult result = JsonUtil.fromJson(responseString, apiData.getResponseClass());

@@ -17,8 +17,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ApiContext {
 
-    private NetworkClient networkClient;
-
     /**
      * 인증 정보
      */
@@ -28,6 +26,8 @@ public class ApiContext {
      * Api Class에서 추출한 데이터를 담은 객체
      */
     private ApiData apiData;
+
+    private NetworkClient networkClient;
 
     /**
      * 서버에 요청 보낼 데이터를 담은 객체

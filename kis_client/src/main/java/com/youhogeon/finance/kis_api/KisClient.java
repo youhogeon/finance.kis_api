@@ -22,6 +22,7 @@ import com.youhogeon.finance.kis_api.exception.InvalidApiRequestException;
 import com.youhogeon.finance.kis_api.exception.KisClientException;
 import com.youhogeon.finance.kis_api.middleware.AuthMiddleware;
 import com.youhogeon.finance.kis_api.middleware.Middleware;
+import com.youhogeon.finance.kis_api.middleware.PageableResultMiddleware;
 import com.youhogeon.finance.kis_api.middleware.RateLimitingMiddleware;
 
 import lombok.Getter;
@@ -44,6 +45,7 @@ public class KisClient {
 
         middlewares.add(new AuthMiddleware());
         middlewares.add(new RateLimitingMiddleware());
+        middlewares.add(new PageableResultMiddleware());
         middlewares.addAll(config.getAllMiddlewares());
 
         clients = new NetworkClient[] {
@@ -64,23 +66,30 @@ public class KisClient {
 
     public <T extends ApiResult> T execute(Api<T> api) {
         Credentials credentials = config.getCredentials();
-        ApiContext context = new ApiContext(credentials);
 
-        return execute(api, context);
+        return execute(api, credentials);
     }
 
     public <T extends ApiResult> T execute(Api<T> api, String credentialsName) {
         Credentials credentials = config.getCredentials(credentialsName);
-        ApiContext context = new ApiContext(credentials);
 
-        return execute(api, context);
+        return execute(api, credentials);
     }
 
-    public <T extends ApiResult> T execute(Api<T> api, ApiContext context) {
+    /**
+     * @hidden
+     * Low level API request method.
+     *
+     * Do not use this method directly.
+     */
+    public <T extends ApiResult> T execute(Api<T> api, Credentials credentials) {
         logger.trace("API Request begins [{}]", api.getClass().getSimpleName());
 
+        ApiParser parser = new ApiParser(api);
+        ApiData data = parser.parse();
+
         try {
-            return _execute(api, context);
+            return execute(data, credentials);
         } catch (KisClientException e) {
             logger.error("API Request failed [{}] {}", api.getClass().getSimpleName(), e.getMessage());
 
@@ -92,29 +101,14 @@ public class KisClient {
         }
     }
 
-    public void close() {
-        for (NetworkClient client : clients) {
-            try {
-                client.close();
-            } catch (IOException e) {
-                logger.error("Failed to close client. {}", e.getMessage());
-            }
-        }
-    }
-
-    private NetworkClient getClient(ApiData data) {
-        for (NetworkClient client : clients) {
-            if (client.isSupport(data)) {
-                return client;
-            }
-        }
-
-        throw new InvalidApiRequestException("No client supports the request.");
-    }
-
-    private <T extends ApiResult> T _execute(Api<T> api, ApiContext context) {
-        ApiParser parser = new ApiParser(api);
-        ApiData data = parser.parse();
+    /**
+     * @hidden
+     * Low level API request method.
+     *
+     * Do not use this method directly.
+     */
+    public <T extends ApiResult> T execute(ApiData data, Credentials credentials) {
+        ApiContext context = new ApiContext(credentials);
         context.setApiData(data);
 
         for(Middleware middleware : this.middlewares) {
@@ -146,6 +140,26 @@ public class KisClient {
         T _result = (T)result;
 
         return _result;
+    }
+
+    public void close() {
+        for (NetworkClient client : clients) {
+            try {
+                client.close();
+            } catch (IOException e) {
+                logger.error("Failed to close client. {}", e.getMessage());
+            }
+        }
+    }
+
+    private NetworkClient getClient(ApiData data) {
+        for (NetworkClient client : clients) {
+            if (client.isSupport(data)) {
+                return client;
+            }
+        }
+
+        throw new InvalidApiRequestException("No client supports the request.");
     }
 
 }

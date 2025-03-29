@@ -1,6 +1,7 @@
 package com.youhogeon.finance.kis_api.context;
 
 import java.lang.annotation.Annotation;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.youhogeon.finance.kis_api.api.ApiResult;
@@ -12,7 +13,7 @@ import lombok.NonNull;
 
 @Builder
 @Getter
-public class ApiData {
+public class ApiData implements Cloneable {
 
     private Map<String, Object> body;
 
@@ -34,6 +35,21 @@ public class ApiData {
 
     public boolean hasAnnotation(Class<? extends Annotation> annotationClass) {
         return AnnotationUtil.contains(annotations, annotationClass);
+    }
+
+    public ApiData clone() {
+        try {
+            ApiData cloned = (ApiData) super.clone();
+
+            cloned.body = new LinkedHashMap<>(body);
+            cloned.headers = new LinkedHashMap<>(headers);
+            cloned.parameters = new LinkedHashMap<>(parameters);
+
+            return cloned;
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException("Failed to clone ApiData", e);
+        }
+
     }
 
 }

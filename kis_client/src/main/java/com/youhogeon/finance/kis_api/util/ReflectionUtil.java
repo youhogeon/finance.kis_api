@@ -154,5 +154,21 @@ public class ReflectionUtil {
         return null;
     }
 
+    public static Field getFieldFromClassHierarchy(Class<?> clazz, String fieldName) throws NoSuchFieldException {
+        Class<?> current = clazz;
+        while (current != null) {
+            try {
+                Field field = current.getDeclaredField(fieldName);
+                field.setAccessible(true);
+
+                return field;
+            } catch (NoSuchFieldException e) {
+                current = current.getSuperclass();
+            }
+        }
+
+        throw new NoSuchFieldException("Field " + fieldName + " not found in class hierarchy");
+    }
+
 
 }
