@@ -20,6 +20,9 @@ public abstract class PageableApiResult<T extends ApiResult> implements ApiResul
     @Header("tr_cont")
     private String trCont;
 
+    private String ctxAreaFk;
+    private String ctxAreaNk;
+
     private String ctxAreaFk100;
     private String ctxAreaNk100;
 

@@ -45,6 +45,8 @@ public class PageableResultMiddleware implements Middleware {
 
                     List<Pair<String, String>> values = List.of(
                         new Pair<>("tr_cont", "N"),
+                        new Pair<>("CTX_AREA_FK", ((PageableApiResult<?>) result).getCtxAreaFk()),
+                        new Pair<>("CTX_AREA_NK", ((PageableApiResult<?>) result).getCtxAreaNk()),
                         new Pair<>("CTX_AREA_FK100", ((PageableApiResult<?>) result).getCtxAreaFk100()),
                         new Pair<>("CTX_AREA_NK100", ((PageableApiResult<?>) result).getCtxAreaNk100()),
                         new Pair<>("CTX_AREA_FK200", ((PageableApiResult<?>) result).getCtxAreaFk200()),
