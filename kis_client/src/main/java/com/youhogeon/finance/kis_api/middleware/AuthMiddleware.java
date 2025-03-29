@@ -10,6 +10,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.youhogeon.finance.kis_api.KisClient;
 import com.youhogeon.finance.kis_api.api.annotation.auth.AccountRequired;
 import com.youhogeon.finance.kis_api.api.annotation.auth.AppKeyRequired;
@@ -37,6 +40,8 @@ public class AuthMiddleware implements Middleware {
     private final ConcurrentMap<Credentials, ReentrantLock> locks = new ConcurrentHashMap<>();
 
     private final ConcurrentMap<Credentials, Pair<NetworkClient, String>> approvalKeys = new ConcurrentHashMap<>();
+
+    private static final Logger logger = LoggerFactory.getLogger(AuthMiddleware.class);
 
     @Override
     public void afterInit(KisClient client, ApiContext context) {
@@ -165,6 +170,10 @@ public class AuthMiddleware implements Middleware {
         return pair.getSecond();
     }
 
+    private boolean isExpired(LocalDateTime expiredAt) {
+        return expiredAt.isBefore(LocalDateTime.now().minusMinutes(1));
+    }
+
     private String getAppTokenFromCache(Credentials credentials) {
         Pair<String, LocalDateTime> tokenInfo = appTokens.get(credentials);
 
@@ -172,10 +181,10 @@ public class AuthMiddleware implements Middleware {
             return null;
         }
 
-        LocalDateTime accessTokenExpired = tokenInfo.getSecond();
+        LocalDateTime accessTokenExpired = tokenInfo.getB();
 
-        if (accessTokenExpired.isAfter(LocalDateTime.now().minusMinutes(1))) {
-            return tokenInfo.getFirst();
+        if (!isExpired(accessTokenExpired)) {
+            return tokenInfo.getA();
         }
 
         return null;
@@ -185,7 +194,17 @@ public class AuthMiddleware implements Middleware {
         Credentials credentials = context.getCredentials();
 
         if (credentials.getAppToken() != null) {
-            return credentials.getAppToken();
+            if (credentials.getAppTokenExpiredAt() == null) {
+                return credentials.getAppToken();
+            }
+
+            LocalDateTime expiredAt = DateUtil.toLocalDateTime(credentials.getAppTokenExpiredAt());
+
+            if (!isExpired(expiredAt)) {
+                return credentials.getAppToken();
+            } else {
+                logger.warn("The appToken in Credentials seems to have expired (appTokenExpiredAt value has passed), request a new one.");
+            }
         }
 
         String cachedToken = getAppTokenFromCache(credentials);

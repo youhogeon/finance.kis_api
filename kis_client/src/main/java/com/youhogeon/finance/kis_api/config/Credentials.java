@@ -11,11 +11,16 @@ public class Credentials {
     private String appKey;
     private String appSecret;
 
-    private String appToken;
-    private String approvalKey;
-
     private String accountNo;
     private String accountProductCode;
+
+    /**
+     * 앱 토큰 발급 요청 없이 기 발급받은 토큰 이용 시 사용
+     */
+    private String appToken;
+    private String appTokenExpiredAt;
+
+    private String approvalKey;
 
     /**
      * 초당 허용 요청 수 (한국투자증권에서 제공하는 유량)
