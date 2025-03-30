@@ -17,7 +17,7 @@ import lombok.Setter;
 @RestApi(method = RestApi.Method.GET, path = "/uapi/domestic-stock/v1/quotations/inquire-price")
 public class InquirePriceApi extends CommonRestApi<InquirePriceResult> {
 
-    @Header("tr_id")
+    @Header
     private String trId = "FHKST01010100";
 
     @Parameter("FID_COND_MRKT_DIV_CODE")

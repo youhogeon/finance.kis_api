@@ -44,7 +44,7 @@ public class PageableResultMiddleware implements Middleware {
                     ApiData clonedApiData = apiData.clone();
 
                     List<Pair<String, String>> values = List.of(
-                        new Pair<>("tr_cont", "N"),
+                        new Pair<>("TR_CONT", "N"),
                         new Pair<>("CTX_AREA_FK", ((PageableApiResult<?>) result).getCtxAreaFk()),
                         new Pair<>("CTX_AREA_NK", ((PageableApiResult<?>) result).getCtxAreaNk()),
                         new Pair<>("CTX_AREA_FK100", ((PageableApiResult<?>) result).getCtxAreaFk100()),
@@ -67,6 +67,8 @@ public class PageableResultMiddleware implements Middleware {
                         for (Map<String, Object> map : maps) {
                             if (map.containsKey(entry.getFirst())) {
                                 map.put(entry.getFirst(), entry.getSecond());
+                            } else if (map.containsKey(entry.getFirst().toLowerCase())) {
+                                map.put(entry.getFirst().toLowerCase(), entry.getSecond());
                             }
                         }
                     }

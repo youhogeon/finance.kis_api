@@ -17,37 +17,37 @@ import lombok.Setter;
 @AccountRequired
 @RestApi(method = RestApi.Method.POST, path = "/uapi/domestic-stock/v1/trading/order-rvsecncl")
 public class OrderRvsecnclApi extends CommonRestApi<OrderRvsecnclResult> {
-    
-    @Header("tr_id")
+
+    @Header
     private String trId = "TTTC0013U";
 
-    @Body("KRX_FWDG_ORD_ORGNO")
+    @Body
     @NonNull
     private String krxFwdgOrdOrgno;
 
-    @Body("ORGN_ODNO")
+    @Body
     @NonNull
     private String orgnOdno;
 
-    @Body("ORD_DVSN")
+    @Body
     private String ordDvsn = "00";
 
-    @Body("RVSE_CNCL_DVSN_CD")
+    @Body
     private String rvseCnclDvsnCd = "01"; // "01" 정정 "02" 취소
 
-    @Body("ORD_QTY")
+    @Body
     private String qrdQty = "0";
 
-    @Body("ORD_UNPR")
+    @Body
     private String qrtUnpr = "0";
 
-    @Body("QTY_ALL_ORD_YN")
+    @Body
     private String qtyAllOrdYn = "N";
 
-    @Body("CNDT_PRIC")
+    @Body
     private String cndtPric = "";
 
-    @Body("EXCG_ID_DVSN_CD")
+    @Body
     private String excgIdDvsnCd = "KRX";
 
 }

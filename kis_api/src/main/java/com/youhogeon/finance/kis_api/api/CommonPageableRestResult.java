@@ -13,10 +13,10 @@ public abstract class CommonPageableRestResult<T extends ApiResult> extends Page
     @Header("content-type")
     private String contentType;
 
-    @Header("tr_id")
+    @Header
     private String trId;
 
-    @Header("gt_uid")
+    @Header
     private String gtUid;
 
 }

@@ -13,34 +13,34 @@ import lombok.Setter;
 @RestApi(method = RestApi.Method.GET, path = "/uapi/domestic-stock/v1/trading/inquire-balance")
 public class InquireBalanceApi extends CommonRestApi<InquireBalanceResult> {
 
-   @Header("tr_id")
+   @Header
    private String trId = "TTTC8434R";
 
-   @Parameter("AFHR_FLPR_YN")
+   @Parameter
    private String afhrFlprYn = "N";
 
-   @Parameter("OFL_YN")
+   @Parameter
    private String oflYn = "";
 
-   @Parameter("INQR_DVSN")
+   @Parameter
    private String inqrDvsn = "02";
 
-   @Parameter("UNPR_DVSN")
+   @Parameter
    private String unprDvsn = "01";
 
-   @Parameter("FUND_STTL_ICLD_YN")
+   @Parameter
    private String fundSttlIcldYn = "Y";
 
-   @Parameter("FNCG_AMT_AUTO_RDPT_YN")
+   @Parameter
    private String fncgAmtAutoRdptYn = "N";
 
-   @Parameter("PRCS_DVSN")
+   @Parameter
    private String prcsDvsn = "00";
 
-   @Parameter("CTX_AREA_FK100")
+   @Parameter
    private String ctxAreaFk100 = "";
 
-   @Parameter("CTX_AREA_NK100")
+   @Parameter
    private String ctxAreaNk100 = "";
 
 }

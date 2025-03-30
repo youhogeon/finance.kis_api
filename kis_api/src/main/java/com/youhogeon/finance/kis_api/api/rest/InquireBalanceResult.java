@@ -1,7 +1,6 @@
 package com.youhogeon.finance.kis_api.api.rest;
 
 import com.youhogeon.finance.kis_api.api.CommonPageableRestResult;
-import com.youhogeon.finance.kis_api.api.annotation.Header;
 
 import lombok.Getter;
 import lombok.ToString;
@@ -9,15 +8,6 @@ import lombok.ToString;
 @Getter
 @ToString(callSuper = true)
 public class InquireBalanceResult extends CommonPageableRestResult<InquireBalanceResult> {
-
-    @Header("content-type")
-    private String contentType;
-
-    @Header("tr_id")
-    private String trId;
-
-    @Header("gt_uid")
-    private String gtUid;
 
     private String rtCd;
     private String msgCd;

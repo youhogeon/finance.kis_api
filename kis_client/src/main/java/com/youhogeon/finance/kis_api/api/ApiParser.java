@@ -16,7 +16,11 @@ import com.youhogeon.finance.kis_api.exception.InvalidApiSpecException;
 import com.youhogeon.finance.kis_api.util.AnnotationUtil;
 import com.youhogeon.finance.kis_api.util.Pair;
 import com.youhogeon.finance.kis_api.util.ReflectionUtil;
+import com.youhogeon.finance.kis_api.util.StringUtil;
 
+/**
+ * @hidden
+ */
 public class ApiParser {
 
     private Api<?> apiRequest;
@@ -62,16 +66,17 @@ public class ApiParser {
 
             for (Annotation a : annotation) {
                 if (a instanceof Header) {
-                    headers.put(((Header) a).value(), field);
+                    String key = ((Header) a).value();
+                    headers.put(key.equals("") ? StringUtil.toSnakeCase(field.getName()) : key, field);
                 } else if (a instanceof Parameter) {
-                    parameters.put(((Parameter) a).value(), field);
+                    String key = ((Parameter) a).value();
+                    parameters.put(key.equals("") ? StringUtil.toUpperSnakeCase(field.getName()) : key, field);
                 } else if (a instanceof Body) {
-                    body.put(((Body) a).value(), field);
+                    String key = ((Body) a).value();
+                    body.put(key.equals("") ? StringUtil.toUpperSnakeCase(field.getName()) : key, field);
                 } else {
                     continue;
                 }
-
-                field.setAccessible(true);
             }
         }
 
@@ -134,7 +139,10 @@ public class ApiParser {
 
         try {
             for (Map.Entry<String, Field> item : fields.entrySet()) {
-                values.put(item.getKey(), item.getValue().get(apiRequest));
+                Field field = item.getValue();
+                field.setAccessible(true);
+
+                values.put(item.getKey(), field.get(apiRequest));
             }
         } catch (IllegalAccessException e) {
             throw new InvalidApiSpecException("Failed to access Api class field");

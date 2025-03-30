@@ -17,14 +17,14 @@ public class ChkHolidayApi extends CommonRestApi<ChkHolidayApiResult>  {
     @Header("tr_id")
     private String trId = "CTCA0903R";
 
-    @Parameter("BASS_DT")
+    @Parameter
     @NonNull
     private String bassDt; // 기준일자 (YYYYMMDD)
 
-    @Parameter("CTX_AREA_NK")
+    @Parameter
     private String ctxAreaNk = "";
 
-    @Parameter("CTX_AREA_FK")
+    @Parameter
     private String ctxAreaFk = "";
 
 }

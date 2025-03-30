@@ -14,14 +14,14 @@ import lombok.Setter;
 @RestApi(method = RestApi.Method.GET, path = "/uapi/domestic-stock/v1/quotations/inquire-index-price")
 public class InquireIndexPriceApi extends CommonRestApi<InquireIndexPriceResult> {
 
-    @Header("tr_id")
+    @Header
     private String trId = "FHPUP02100000";
 
-    @Parameter("FID_INPUT_ISCD")
+    @Parameter
     @NonNull
     private String fidInputIscd; // 코스피(0001), 코스닥(1001), 코스피200(2001)
 
-    @Parameter("FID_COND_MRKT_DIV_CODE")
+    @Parameter
     private String fidCondMrktDivCode = "U";
 
 }

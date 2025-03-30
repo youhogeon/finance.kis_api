@@ -14,15 +14,15 @@ import lombok.Setter;
 @RestApi(method = RestApi.Method.GET, path = "/uapi/domestic-stock/v1/quotations/inquire-asking-price-exp-ccn")
 public class InquireAskingPriceExpCcnApi extends CommonRestApi<InquireAskingPriceExpCcnResult>  {
 
-    @Header("tr_id")
+    @Header
     private String trId = "FHKST01010200";
 
     /** 조건 시장 분류 코드	(J:KRX, NX:NXT, UN:통합) */
-    @Parameter("FID_COND_MRKT_DIV_CODE")
+    @Parameter
     private String fidCondMrktDivCode = "UN";
 
     /** 입력 종목코드 */
-    @Parameter("FID_INPUT_ISCD")
+    @Parameter
     @NonNull
     private String fidInputIscd;
 

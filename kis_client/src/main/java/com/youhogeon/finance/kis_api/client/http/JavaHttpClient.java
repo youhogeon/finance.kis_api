@@ -170,6 +170,10 @@ public class JavaHttpClient extends com.youhogeon.finance.kis_api.client.http.Ht
 
             String key = ((Header) annotation).value();
 
+            if (key.equals("")) {
+                key = StringUtil.toSnakeCase(field.getName());
+            }
+
             if (headers.containsKey(key)) {
                 try {
                     field.setAccessible(true);

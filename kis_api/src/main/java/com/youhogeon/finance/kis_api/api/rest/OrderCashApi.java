@@ -19,31 +19,31 @@ import lombok.Setter;
 @RestApi(method = RestApi.Method.POST, path = "/uapi/domestic-stock/v1/trading/order-cash")
 public class OrderCashApi extends CommonRestApi<OrderCashResult> {
 
-    @Header("tr_id")
+    @Header
     private String trId = "TTTC0012U"; // 매도 : TTTC0011U
 
-    @Body("PDNO")
+    @Body
     @NonNull
     private String pdno;
 
-    @Body("SLL_TYPE")
+    @Body
     private String sllType = "01";
 
-    @Body("ORD_DVSN")
+    @Body
     private String ordDvsn = "00";
 
-    @Body("ORD_QTY")
+    @Body
     @NonNull
     private String qrdQty;
 
-    @Body("ORD_UNPR")
+    @Body
     @NonNull
     private String qrtUnpr;
 
-    @Body("CNDT_PRIC")
+    @Body
     private String cndtPric = "";
 
-    @Body("EXCG_ID_DVSN_CD")
+    @Body
     private String excgIdDvsnCd = "KRX";
 
 }

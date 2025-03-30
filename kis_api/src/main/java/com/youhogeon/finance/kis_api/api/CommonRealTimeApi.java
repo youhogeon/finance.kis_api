@@ -19,21 +19,21 @@ public abstract class CommonRealTimeApi<T extends ApiResult> implements Api<T> {
         this.trKey = trKey;
     }
 
-    @Header("custtype")
-    private String custType = "P";
+    @Header
+    private String custtype = "P";
 
-    @Header("tr_type")
+    @Header
     private TransactionType trType = TransactionType.SUBSCRIBE;
 
     @Header("content-type")
     private String contentType = "utf-8";
 
     @NonNull
-    @Body("tr_id")
+    @Body
     private String trId;
 
     @NonNull
-    @Body("tr_key")
+    @Body
     private String trKey;
 
 }

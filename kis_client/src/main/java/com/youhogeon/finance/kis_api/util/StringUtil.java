@@ -112,4 +112,48 @@ public class StringUtil {
         return result;
     }
 
+    public static String toSnakeCase(String input) {
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < input.length(); i++) {
+            char c = input.charAt(i);
+
+            if (c == '_') {
+                sb.append(c);
+            } else if (Character.isUpperCase(c)) {
+                if (i > 0 && input.charAt(i - 1) != '_' && Character.isLowerCase(input.charAt(i - 1))) {
+                    sb.append('_');
+                }
+
+                sb.append(Character.toLowerCase(c));
+            } else {
+                sb.append(c);
+            }
+        }
+
+        return sb.toString();
+    }
+
+    public static String toUpperSnakeCase(String input) {
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < input.length(); i++) {
+            char c = input.charAt(i);
+
+            if (c == '_') {
+                sb.append(c);
+            } else if (Character.isUpperCase(c)) {
+                if (i > 0 && input.charAt(i - 1) != '_' && Character.isLowerCase(input.charAt(i - 1))) {
+                    sb.append('_');
+                }
+
+                sb.append(c);
+            } else {
+                sb.append(Character.toUpperCase(c));
+            }
+        }
+
+        return sb.toString();
+    }
+
 }

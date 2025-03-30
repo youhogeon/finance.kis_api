@@ -14,13 +14,13 @@ public class GetTokenResult implements ApiResult {
     @Header("content-type")
     private String contentType;
 
-    @Header("tr_id")
+    @Header
     private String trId;
 
-    @Header("tr_cont")
+    @Header
     private String trCont;
 
-    @Header("gt_uid")
+    @Header
     private String gtUid;
 
     private String accessToken;

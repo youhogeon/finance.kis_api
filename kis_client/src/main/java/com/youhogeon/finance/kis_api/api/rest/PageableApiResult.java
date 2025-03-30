@@ -12,12 +12,15 @@ import lombok.Setter;
  * 다중 페이지(연속조회)가 필요한 API의 경우
  * PageableResult를 상속받는 ApiResult class를 만듦으로써
  * next() 메서드를 사용할 수 있음.
+ *
+ * <p>예시</p>
+ * {@see com.youhogeon.finance.kis_api.api.rest.InquireBalanceResult}
  */
 @Setter
 @Getter
 public abstract class PageableApiResult<T extends ApiResult> implements ApiResult {
 
-    @Header("tr_cont")
+    @Header
     private String trCont;
 
     private String ctxAreaFk;

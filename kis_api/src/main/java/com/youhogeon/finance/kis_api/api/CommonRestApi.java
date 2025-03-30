@@ -18,28 +18,28 @@ public abstract class CommonRestApi<T extends ApiResult> implements Api<T> {
     @Header("content-type")
     private String contentType = "application/json; charset=utf-8";
 
-    @Header("personalseckey")
-    private String personalSecKey;
+    @Header
+    private String personalseckey;
 
-    @Header("tr_cont")
+    @Header
     private String trCont;
 
-    @Header("custtype")
-    private String custType = "P";
+    @Header
+    private String custtype = "P";
 
-    @Header("seq_no")
+    @Header
     private String seqNo;
 
-    @Header("mac_address")
+    @Header
     private String macAddress;
 
-    @Header("phone_number")
+    @Header
     private String phoneNumber;
 
-    @Header("ip_addr")
+    @Header
     private String ipAddr;
 
-    @Header("gt_uid")
+    @Header
     private String gtUid;
 
 }
