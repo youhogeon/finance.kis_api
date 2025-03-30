@@ -4,7 +4,6 @@ import com.youhogeon.finance.kis_api.api.CommonRestApi;
 import com.youhogeon.finance.kis_api.api.annotation.Header;
 import com.youhogeon.finance.kis_api.api.annotation.Parameter;
 import com.youhogeon.finance.kis_api.api.annotation.RestApi;
-import com.youhogeon.finance.kis_api.api.annotation.auth.AccountRequired;
 
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
