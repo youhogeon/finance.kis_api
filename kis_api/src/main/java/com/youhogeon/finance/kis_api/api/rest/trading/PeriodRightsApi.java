@@ -17,7 +17,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @RequiredArgsConstructor
 @Setter
-@AccountRequired
+@AccountRequired(location= AccountRequired.Location.PARAMETER)
 @RestApi(method = RestApi.Method.GET, path = "/uapi/domestic-stock/v1/trading/period-rights")
 public class PeriodRightsApi extends CommonRestApi<PeriodRightsResult> {
 

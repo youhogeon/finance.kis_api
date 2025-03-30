@@ -17,7 +17,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @RequiredArgsConstructor
 @Setter
-@AccountRequired
 @RestApi(method = RestApi.Method.GET, path = "/uapi/domestic-stock/v1/quotations/inquire-time-dailychartprice")
 public class InquireTimeDailychartpriceApi extends CommonRestApi<InquireTimeDailychartpriceResult> {
 

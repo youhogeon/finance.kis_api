@@ -14,7 +14,7 @@ import lombok.Setter;
  */
 @NoArgsConstructor
 @Setter
-@AccountRequired
+@AccountRequired(location= AccountRequired.Location.PARAMETER)
 @RestApi(method = RestApi.Method.GET, path = "/uapi/domestic-stock/v1/trading/intgr-margin")
 public class IntgrMarginApi extends CommonRestApi<IntgrMarginResult> {
 

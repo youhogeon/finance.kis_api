@@ -193,6 +193,11 @@ public class AuthMiddleware implements Middleware {
     private String getAppToken(KisClient client, ApiContext context) {
         Credentials credentials = context.getCredentials();
 
+        String cachedToken = getAppTokenFromCache(credentials);
+        if (cachedToken != null) {
+            return cachedToken;
+        }
+
         if (credentials.getAppToken() != null) {
             if (credentials.getAppTokenExpiredAt() == null) {
                 return credentials.getAppToken();
@@ -205,11 +210,6 @@ public class AuthMiddleware implements Middleware {
             } else {
                 logger.warn("The appToken in Credentials seems to have expired (appTokenExpiredAt value has passed), request a new one.");
             }
-        }
-
-        String cachedToken = getAppTokenFromCache(credentials);
-        if (cachedToken != null) {
-            return cachedToken;
         }
 
         ReentrantLock lock = locks.computeIfAbsent(credentials, k -> new ReentrantLock());

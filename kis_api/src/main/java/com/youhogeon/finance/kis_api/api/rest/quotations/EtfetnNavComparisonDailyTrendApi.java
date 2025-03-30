@@ -4,7 +4,6 @@ import com.youhogeon.finance.kis_api.api.CommonRestApi;
 import com.youhogeon.finance.kis_api.api.annotation.Header;
 import com.youhogeon.finance.kis_api.api.annotation.Parameter;
 import com.youhogeon.finance.kis_api.api.annotation.RestApi;
-import com.youhogeon.finance.kis_api.api.annotation.auth.AccountRequired;
 
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -17,7 +16,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @RequiredArgsConstructor
 @Setter
-@AccountRequired
 @RestApi(method = RestApi.Method.GET, path = "/uapi/etfetn/v1/quotations/nav-comparison-daily-trend")
 public class EtfetnNavComparisonDailyTrendApi extends CommonRestApi<EtfetnNavComparisonDailyTrendResult> {
 
