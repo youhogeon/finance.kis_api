@@ -21,8 +21,8 @@ public class InquireTimeItemconclusionResult extends CommonRestResult {
     /** 응답상세1 (단일 데이터) */
     private Output1 output1;
 
-    /** 응답상세2 (단일 데이터) */
-    private Output2 output2;
+    /** 응답상세2 */
+    private Output2[] output2;
 
     @Getter
     @ToString

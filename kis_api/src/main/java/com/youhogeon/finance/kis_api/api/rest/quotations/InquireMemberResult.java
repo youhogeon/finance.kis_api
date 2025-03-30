@@ -18,8 +18,8 @@ public class InquireMemberResult extends CommonRestResult {
     /** 응답메세지 */
     private String msg1;
 
-    /** 응답상세 (Array) */
-    private Output[] output;
+    /** 응답상세 */
+    private Output output;
 
     @Getter
     @ToString

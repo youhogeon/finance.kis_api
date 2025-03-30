@@ -45,7 +45,7 @@ public class InquirePeriodProfitApi extends CommonRestApi<InquirePeriodProfitRes
      */
     @Parameter
     @NonNull
-    private String pdno = "";
+    private String pdno;
 
     /**
      * 정렬구분

@@ -22,7 +22,7 @@ public class InquireDailyItemchartpriceResult extends CommonRestResult {
     private Output1 output1;
 
     /** 응답상세2 */
-    private Output2 output2;
+    private Output2[] output2;
 
     @Getter
     @ToString

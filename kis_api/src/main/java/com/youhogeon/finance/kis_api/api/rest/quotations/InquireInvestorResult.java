@@ -19,11 +19,11 @@ public class InquireInvestorResult extends CommonRestResult {
     private String msg1;
 
     /** 응답상세 (배열) */
-    private Output1[] output1;
+    private Output[] output;
 
     @Getter
     @ToString
-    public static class Output1 {
+    public static class Output {
 
         /** 주식 영업 일자 */
         private String stckBsopDate;

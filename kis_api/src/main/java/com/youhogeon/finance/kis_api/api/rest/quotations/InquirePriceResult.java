@@ -19,11 +19,11 @@ public class InquirePriceResult extends CommonRestResult {
     private String msg1;
 
     /** 응답상세 */
-    private Output1 output1;
+    private Output output;
 
     @Getter
     @ToString
-    public static class Output1 {
+    public static class Output {
 
         /** 종목 상태 구분 코드 */
         private String iscdStatClsCode;

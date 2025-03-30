@@ -68,7 +68,6 @@ public class OrderResvApi extends CommonRestApi<OrderResvResult> {
      * 05 : 장전 시간외
      */
     @Body
-    @NonNull
     private String ordDvsnCd = "01";
 
     /**

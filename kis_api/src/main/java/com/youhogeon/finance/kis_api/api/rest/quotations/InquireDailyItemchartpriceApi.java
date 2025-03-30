@@ -45,6 +45,7 @@ public class InquireDailyItemchartpriceApi extends CommonRestApi<InquireDailyIte
      * 조회 시작일자
      */
     @Parameter
+    @NonNull
     private String fidInputDate1;
 
     /**
@@ -53,6 +54,7 @@ public class InquireDailyItemchartpriceApi extends CommonRestApi<InquireDailyIte
      * 조회 종료일자 (최대 100개)
      */
     @Parameter
+    @NonNull
     private String fidInputDate2;
 
     /**

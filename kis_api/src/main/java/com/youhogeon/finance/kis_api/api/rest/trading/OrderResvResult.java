@@ -19,7 +19,7 @@ public class OrderResvResult extends CommonRestResult {
     private String msg;
 
     /** 응답상세 */
-    private Output[] output;
+    private Output output;
 
     @Getter
     @ToString
