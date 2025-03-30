@@ -1,4 +1,4 @@
-package com.youhogeon.finance.kis_api.api.rest.deprecated;
+package com.youhogeon.finance.kis_api.api.rest.quotations;
 
 import com.youhogeon.finance.kis_api.api.CommonRestApi;
 import com.youhogeon.finance.kis_api.api.annotation.Header;

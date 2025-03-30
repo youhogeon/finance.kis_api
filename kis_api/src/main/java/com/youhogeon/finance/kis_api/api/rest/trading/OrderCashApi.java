@@ -37,7 +37,7 @@ public class OrderCashApi extends CommonRestApi<OrderCashResult> {
      */
     @Body
     @NonNull
-    private String pdno = "";
+    private String pdno;
 
     /**
      * 매도유형 (매도주문 시)
@@ -104,6 +104,7 @@ public class OrderCashApi extends CommonRestApi<OrderCashResult> {
      * 주문단가
      */
     @Body
+    @NonNull
     private String ordUnpr;
 
     /**
