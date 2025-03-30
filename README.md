@@ -127,22 +127,22 @@ Api Class, Api Result Class 두 개의 클래스 모두 작성해야 합니다.
     public class SampleApi extends CommonRestApi<SampleApiResult> { // 아래에서 만들 Result Class를 Generic으로 지정
 
         // @Header Annotation이 붙은 필드는 요청 헤더에 추가됨.
-        @Header("tr_id")
+        @Header
         private String trId = "FHKST01010100";
 
         // @Parameter Annotation이 붙은 필드는 URL Parameter에 추가됨.
-        @Parameter("FID_COND_MRKT_DIV_CODE")
-        private String marketCode = "UN";
+        @Parameter
+        private String fidCondMrktDivCode = "UN";
 
-        @Parameter("FID_INPUT_ISCD")
-        private String code;
+        @Parameter
+        private String fidInputIscd;
 
         // @Body Annotation이 붙은 필드는 요청 본문에 추가됨.
-        @Body("body1")
-        private String aaa = "...";
+        @Body
+        private String body1 = "...";
 
-        @Body("body2")
-        private String bbb = "...";
+        @Body
+        private String body2 = "...";
 
     }
     ```
@@ -154,7 +154,7 @@ Api Class, Api Result Class 두 개의 클래스 모두 작성해야 합니다.
     public class SampleApiResult extends CommonResult {
 
         // @Header Annotation 을 사용해 응답 헤더에 있는 필드 정의.
-        @Header("tr_id")
+        @Header
         private String trId;
 
         // 응답 본문에 있는 필드들 정의 (camelCase, snake_case 모두 지원)
@@ -203,3 +203,7 @@ WebSocket API는 , Result Class 외에 Data Class(실시간 수신받는 데이�
 * 예외 타입 세분화
 * 일관성있는 로깅
 * 테스트 커버리지 확대
+
+## 면책조항
+본 라이브러리의 사용으로 인하여 발생한 손해(버그 등으로 인한)에 대한 책임은 라이브러리 사용자에게 귀속됩니다.\
+라이브러리 사용 시 위 면책조항에 동의하는 것으로 간주합니다.
