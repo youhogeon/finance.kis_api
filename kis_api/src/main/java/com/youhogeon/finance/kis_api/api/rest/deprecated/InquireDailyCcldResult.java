@@ -1,4 +1,6 @@
-package com.youhogeon.finance.kis_api.api.rest;
+package com.youhogeon.finance.kis_api.api.rest.deprecated;
+
+import com.youhogeon.finance.kis_api.api.rest.PageableApiResult;
 
 import lombok.Getter;
 import lombok.ToString;

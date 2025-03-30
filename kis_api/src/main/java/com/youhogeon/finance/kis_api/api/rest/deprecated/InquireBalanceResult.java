@@ -1,4 +1,4 @@
-package com.youhogeon.finance.kis_api.api.rest;
+package com.youhogeon.finance.kis_api.api.rest.deprecated;
 
 import com.youhogeon.finance.kis_api.api.CommonPageableRestResult;
 
