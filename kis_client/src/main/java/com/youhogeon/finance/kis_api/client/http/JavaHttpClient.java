@@ -79,7 +79,15 @@ public class JavaHttpClient extends com.youhogeon.finance.kis_api.client.http.Ht
 
                 Thread.sleep(10);
 
-                logger.debug("Request timeout. Retry. [{} / {}]", attempt, maxAttempt);
+                logger.debug("Request timeout. Retry. [{} / {}]", attempt, maxAttempt, e);
+            } catch (IOException e) {
+                if (++attempt >= maxAttempt) {
+                    throw e;
+                }
+
+                Thread.sleep(1);
+
+                logger.debug("Unknown network error. Retry. [{} / {}]", attempt, maxAttempt, e);
             }
         }
     }
