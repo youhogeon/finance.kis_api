@@ -19,11 +19,11 @@ public class InquirePsblSellResult extends CommonRestResult {
     private String msg1;
 
     /** 응답상세 */
-    private Output1 output1;
+    private Output output;
 
     @Getter
     @ToString
-    public static class Output1 {
+    public static class Output {
 
         /** 상품번호 */
         private String pdno;
