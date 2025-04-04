@@ -36,10 +36,10 @@ import com.youhogeon.finance.kis_api.util.Pair;
 
 public class AuthMiddleware implements Middleware {
 
-    private final ConcurrentMap<Credentials, Pair<String, LocalDateTime>> appTokens = new ConcurrentHashMap<>();
-    private final ConcurrentMap<Credentials, ReentrantLock> locks = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Pair<String, LocalDateTime>> appTokens = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, ReentrantLock> locks = new ConcurrentHashMap<>();
 
-    private final ConcurrentMap<Credentials, Pair<NetworkClient, String>> approvalKeys = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Pair<NetworkClient, String>> approvalKeys = new ConcurrentHashMap<>();
 
     private static final Logger logger = LoggerFactory.getLogger(AuthMiddleware.class);
 
@@ -144,7 +144,11 @@ public class AuthMiddleware implements Middleware {
 
     @Override
     public void after(KisClient client, ApiContext context) {
+        Credentials credentials = context.getCredentials();
 
+        if (credentials.getAccountProductCode() != null && credentials.getAccountProductCode().equals("01")) {
+            logger.debug("ORDER ACCOUNT REQUEST (TMP) {} {}", credentials.getAccountNo(), context.getApiData().getResponseClass().getSimpleName());
+        }
     }
 
     private String getApprovalKey(KisClient client, ApiContext context) {
@@ -156,7 +160,7 @@ public class AuthMiddleware implements Middleware {
 
         NetworkClient currentClient = context.getNetworkClient();
 
-        Pair<NetworkClient, String> pair = approvalKeys.compute(credentials, (creds, existingPair) -> {
+        Pair<NetworkClient, String> pair = approvalKeys.compute(credentials.getAppKey(), (creds, existingPair) -> {
             if (existingPair != null && existingPair.getFirst().equals(currentClient)) {
                 return existingPair;
             }
@@ -175,7 +179,7 @@ public class AuthMiddleware implements Middleware {
     }
 
     private String getAppTokenFromCache(Credentials credentials) {
-        Pair<String, LocalDateTime> tokenInfo = appTokens.get(credentials);
+        Pair<String, LocalDateTime> tokenInfo = appTokens.get(credentials.getAppKey());
 
         if (tokenInfo == null) {
             return null;
@@ -212,7 +216,7 @@ public class AuthMiddleware implements Middleware {
             }
         }
 
-        ReentrantLock lock = locks.computeIfAbsent(credentials, k -> new ReentrantLock());
+        ReentrantLock lock = locks.computeIfAbsent(credentials.getAppKey(), k -> new ReentrantLock());
 
         synchronized (lock) {
             cachedToken = getAppTokenFromCache(credentials);
@@ -227,7 +231,7 @@ public class AuthMiddleware implements Middleware {
             // save token to cache
             LocalDateTime expiredAt = DateUtil.toLocalDateTime(resp.getAccessTokenTokenExpired());
             Pair<String, LocalDateTime> tokenInfo = new Pair<>(resp.getAccessToken(), expiredAt);
-            appTokens.put(credentials, tokenInfo);
+            appTokens.put(credentials.getAppKey(), tokenInfo);
 
             return resp.getAccessToken();
         }
