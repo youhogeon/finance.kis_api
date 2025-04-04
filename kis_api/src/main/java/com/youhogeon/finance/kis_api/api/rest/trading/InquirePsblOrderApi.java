@@ -84,7 +84,7 @@ public class InquirePsblOrderApi extends CommonRestApi<InquirePsblOrderResult> {
      * 80 : 바스켓
      */
     @Parameter
-    private String ordDvsn = "";
+    private String ordDvsn = "00";
 
     /**
      * CMA평가금액포함여부
