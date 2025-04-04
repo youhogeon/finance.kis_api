@@ -236,7 +236,7 @@ public class AuthMiddleware implements Middleware {
                     // 접근 토큰은 1분당 1회만 발급 가능하므로 잠시 대기 후 다시 시도
                     if (e.getMessage().contains("\"error_code\":\"EGW00133\"")) {
                         try {
-                            Thread.sleep(100);
+                            Thread.sleep(10000);
                         } catch (InterruptedException ee) {
 
                         }
