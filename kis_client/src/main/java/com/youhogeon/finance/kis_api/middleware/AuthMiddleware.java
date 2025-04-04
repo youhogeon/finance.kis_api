@@ -144,11 +144,7 @@ public class AuthMiddleware implements Middleware {
 
     @Override
     public void after(KisClient client, ApiContext context) {
-        Credentials credentials = context.getCredentials();
 
-        if (credentials.getAccountProductCode() != null && credentials.getAccountProductCode().equals("01")) {
-            logger.debug("ORDER ACCOUNT REQUEST (TMP) {} {}", credentials.getAccountNo(), context.getApiData().getResponseClass().getSimpleName());
-        }
     }
 
     private String getApprovalKey(KisClient client, ApiContext context) {
@@ -225,15 +221,32 @@ public class AuthMiddleware implements Middleware {
             }
 
             // fetch token
-            GetTokenApi req = new GetTokenApi();
-            GetTokenResult resp = client.execute(req, credentials);
+            while (true) {
+                try {
+                    GetTokenApi req = new GetTokenApi();
+                    GetTokenResult resp = client.execute(req, credentials);
 
-            // save token to cache
-            LocalDateTime expiredAt = DateUtil.toLocalDateTime(resp.getAccessTokenTokenExpired());
-            Pair<String, LocalDateTime> tokenInfo = new Pair<>(resp.getAccessToken(), expiredAt);
-            appTokens.put(credentials.getAppKey(), tokenInfo);
+                    // save token to cache
+                    LocalDateTime expiredAt = DateUtil.toLocalDateTime(resp.getAccessTokenTokenExpired());
+                    Pair<String, LocalDateTime> tokenInfo = new Pair<>(resp.getAccessToken(), expiredAt);
+                    appTokens.put(credentials.getAppKey(), tokenInfo);
 
-            return resp.getAccessToken();
+                    return resp.getAccessToken();
+                } catch (InvalidApiRequestException e) {
+                    // 접근 토큰은 1분당 1회만 발급 가능하므로 잠시 대기 후 다시 시도
+                    if (e.getMessage().contains("\"error_code\":\"EGW00133\"")) {
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException ee) {
+
+                        }
+
+                        continue;
+                    }
+
+                    throw e;
+                }
+            }
         }
 
     }

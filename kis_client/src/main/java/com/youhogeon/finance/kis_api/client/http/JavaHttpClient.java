@@ -65,6 +65,8 @@ public class JavaHttpClient extends com.youhogeon.finance.kis_api.client.http.Ht
         int attempt = 0;
         int maxAttempt = config.getHttpTimeoutMaxRetries();
 
+        logger.trace("API Request data: {}", request);
+
         while (true) {
             try {
                 if (request.getMethod() == "POST") {
@@ -136,7 +138,6 @@ public class JavaHttpClient extends com.youhogeon.finance.kis_api.client.http.Ht
             .headers(headers)
             .body(responseString)
             .build();
-
 
         ApiResult apiResult = makeApiResult(context.getCredentials(), context.getApiData(), clinetResponse);
         context.setResponse(clinetResponse);

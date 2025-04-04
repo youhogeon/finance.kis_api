@@ -83,7 +83,7 @@ public class KisClient {
      * Do not use this method directly.
      */
     public <T extends ApiResult> T execute(Api<T> api, Credentials credentials) {
-        logger.trace("API Request begins [{}]", api.getClass().getSimpleName());
+        logger.trace("API Request begins [{}] {}", api.getClass().getSimpleName());
 
         ApiParser parser = new ApiParser(api);
         ApiData data = parser.parse();
