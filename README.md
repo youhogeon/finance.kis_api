@@ -1,5 +1,9 @@
-## 한국투자증권 API Java Wrapper
-[한국투자증권 API](https://apiportal.koreainvestment.com/) 에 대한 Java Wrapper.
+## 한국투자증권 API Java Library
+[한국투자증권 API](https://apiportal.koreainvestment.com/) 호출을 돕는 Java Library.
+
+단 한 줄만으로 API 호출이 가능합니다. (설정 등 공통 요소 제외)\
+예시: `client.execute( new InquirePriceApi("005930") )`
+
 
 ## 기능
 * REST API 호출
@@ -38,16 +42,26 @@ dependencies {
 ## 라이브러리 사용 가이드
 ### 1️⃣ Client 객체 생성
 ```java
+Credentials credentials = new Credentials(
+    "APPKEY",
+    "SECRET",
+    "account(계좌 앞 8자리)",
+    "accountProductCode(계좌 뒤 2자리. ex: 일반계좌는 01)"
+); // 인증 정보 생성
+
+// 주문 없이 조회 API만 사용하는 경우 계좌 AppKey, AppSecret만 등록해도 됨.
+// Credentials credentials = new Credentials("APPKEY", "SECRET");
+
 Configuration config = new Configuration();
-config.addCredentials(new Credentials("KEY", "SECRET")); // 계좌 AppKey, AppSecret 등록
+config.addCredentials(credentials); 
 
 KisClient client = new KisClient(config);
 ```
 
 #### (Optional) 다중 계좌인 경우
 ```java
-Credentials c1 = new Credentials("KEY", "SECRET");
-Credentials c2 = new Credentials("KEY", "SECRET");
+Credentials c1 = new Credentials("APPKEY", "SECRET");
+Credentials c2 = new Credentials("APPKEY", "SECRET");
 
 Configuration config = new Configuration();
 
@@ -71,6 +85,7 @@ KisClient client = new KisClient(config);
 ```
 
 ### 2️⃣ REST API 호출
+> 하나, Api객체를 만든다. 둘, client.execute에 전달한다. 셋, 결과값을 받는다.
 ```java
 // 주식현재가 시세
 InquirePriceApi req = new InquirePriceApi("005930");
@@ -111,13 +126,18 @@ resp.addHandler((response) -> {
 // resp.unsubscribe() // 모든 handler를 제거하고 서버에게 구독 해제 요청을 보냄
 ```
 
+## API 목록
+지원하는 API 목록은 [여기](https://javadoc.io/doc/com.youhogeon.finance/kis_api) 에서 확인할 수 있습니다.
 
-## `사용자 정의 API Definition` 추가 가이드
-### REST API 추가
+지원하지 않는 API에 대해서는 아래 [사용자 정의 API Definition 추가 가이드](#optional-사용자-정의-api-definition-추가-가이드)를 참고하십시오.
+
+
+## (Optional) `사용자 정의 API Definition` 추가 가이드
 한국투자증권에서 제공하는 모든 API를 본 라이브러리에서 지원하는 것이 목표이나, 현재 모든 API가 정의되어있지는 않습니다.
 
-대신 아래와 같이 (라이브러리 사용자가 직접) API Definition을 정의한 class(`사용자 정의 API Definition`)를 만들어서 사용할 수 있도록 설계되었습니다.
+대신 아래와 같이 (라이브러리 사용자가 직접) API Definition을 Java class로 정의(`사용자 정의 API Definition`)하여를 사용할 수 있도록 설계되었습니다.
 
+### REST API 추가
 Api Class, Api Result Class 두 개의 클래스 모두 작성해야 합니다.
 
 1. API Class 생성
