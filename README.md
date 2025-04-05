@@ -1,6 +1,5 @@
-# 한국투자증권 API Java Library
-[한국투자증권 API](https://apiportal.koreainvestment.com/)를 호출하기 위한 고수준 Java Library.
-
+# 한국투자증권 Open API Library for Java
+[한국투자증권 Open API](https://apiportal.koreainvestment.com/) (KIS Developers API)를 호출하기 위한 고수준 Java Library.
 
 ## ✨ 특징
 * 딱 한 줄만으로 API 호출 가능 (설정 등 공통 요소 제외)\
