@@ -1,7 +1,6 @@
 package com.youhogeon.finance.kis_api.client.http;
 
 import java.io.IOException;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -13,6 +12,7 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.LockSupport;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +42,7 @@ public class JavaHttpClient extends com.youhogeon.finance.kis_api.client.http.Ht
         this.config = config;
         this.client = HttpClient
             .newBuilder()
+            .version(HttpClient.Version.HTTP_1_1)
             .connectTimeout(timeout)
             .build();
     }
@@ -69,7 +70,7 @@ public class JavaHttpClient extends com.youhogeon.finance.kis_api.client.http.Ht
 
         while (true) {
             try {
-                if (request.getMethod() == "POST") {
+                if (request.getMethod().equals("POST")) {
                     return POST(request);
                 } else {
                     return GET(request);
@@ -79,17 +80,22 @@ public class JavaHttpClient extends com.youhogeon.finance.kis_api.client.http.Ht
                     throw e;
                 }
 
-                Thread.sleep(10);
-
-                logger.debug("Request timeout. Retry. [{} / {}]", attempt, maxAttempt, e);
+                logger.debug("Request timeout. Retry. [{} / {}]", attempt, maxAttempt, e.getMessage());
+                LockSupport.parkNanos(1_000_000);
             } catch (IOException e) {
                 if (++attempt >= maxAttempt) {
                     throw e;
                 }
 
-                Thread.sleep(1);
+                if (e.getMessage() != null && e.getMessage().contains("HTTP/1.1 header parser received no bytes")) {
+                    logger.debug("Server-Side Network Error. Retry. [{} / {}]", attempt, maxAttempt, e.getMessage());
+
+                    LockSupport.parkNanos(1_000_000);
+                    continue;
+                }
 
                 logger.debug("Unknown network error. Retry. [{} / {}]", attempt, maxAttempt, e);
+                LockSupport.parkNanos(1_000_000);
             }
         }
     }
@@ -158,30 +164,22 @@ public class JavaHttpClient extends com.youhogeon.finance.kis_api.client.http.Ht
         Map<String, List<String>> allHeaders = clientResponse.getHeaders();
         Map<String, String> headers = new HashMap<>();
 
-        for (String key : allHeaders.keySet()) {
-            List<String> value = allHeaders.get(key);
-
-            if (value.isEmpty() || value.size() > 1) {
-                continue;
+        for (Map.Entry<String, List<String>> entry : allHeaders.entrySet()) {
+            if (entry.getValue().size() == 1) {
+                headers.put(entry.getKey(), entry.getValue().get(0));
             }
-
-            headers.put(key, value.get(0));
         }
 
         Field[] fields = ReflectionUtil.getAllFields(result.getClass());
 
         for (Field field : fields) {
-            Annotation annotation = field.getAnnotation(Header.class);
+            Header annotation = field.getAnnotation(Header.class);
 
             if (annotation == null) {
                 continue;
             }
 
-            String key = ((Header) annotation).value();
-
-            if (key.equals("")) {
-                key = StringUtil.toSnakeCase(field.getName());
-            }
+            String key = annotation.value().isEmpty() ? StringUtil.toSnakeCase(field.getName()) : annotation.value();
 
             if (headers.containsKey(key)) {
                 try {
@@ -192,7 +190,6 @@ public class JavaHttpClient extends com.youhogeon.finance.kis_api.client.http.Ht
                 }
             }
         }
-
     }
 
     @Override
@@ -206,10 +203,13 @@ public class JavaHttpClient extends com.youhogeon.finance.kis_api.client.http.Ht
 
     public HttpRequest.Builder getRequestBuilder(HttpClientRequest request) {
         String parameter = StringUtil.makeUrlParamString(request.getParameters());
-        String fullUrl = request.getUrl() + "?" + parameter;
+        StringBuilder urlBuilder = new StringBuilder(request.getUrl());
 
-        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
-            .uri(URI.create(fullUrl));
+        if (!parameter.isEmpty()) {
+            urlBuilder.append('?').append(parameter);
+        }
+
+        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder().uri(URI.create(urlBuilder.toString()));
 
         for (Map.Entry<String, Object> entry : request.getHeaders().entrySet()) {
             if (entry.getValue() == null) {

@@ -3,12 +3,14 @@ package com.youhogeon.finance.kis_api.middleware;
 import java.lang.annotation.Annotation;
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.LockSupport;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.BiConsumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,15 +51,18 @@ public class AuthMiddleware implements Middleware {
         Annotation[] annotations = apiData.getAnnotations();
         Credentials credentials = context.getCredentials();
 
-        for(AccountRequired anno : AnnotationUtil.getAnnotations(annotations, AccountRequired.class)) {
+        for (AccountRequired anno : AnnotationUtil.getAnnotations(annotations, AccountRequired.class)) {
             Map<String, Object> data = null;
-
-            if (anno.location() == AccountRequired.Location.HEADER) {
-                data = apiData.getHeaders();
-            } else if (anno.location() == AccountRequired.Location.BODY) {
-                data = apiData.getBody();
-            } else if (anno.location() == AccountRequired.Location.PARAMETER) {
-                data = apiData.getParameters();
+            switch (anno.location()) {
+                case HEADER:
+                    data = apiData.getHeaders();
+                    break;
+                case BODY:
+                    data = apiData.getBody();
+                    break;
+                case PARAMETER:
+                    data = apiData.getParameters();
+                    break;
             }
 
             if (data != null) {
@@ -74,71 +79,57 @@ public class AuthMiddleware implements Middleware {
     @Override
     public void before(KisClient client, ApiContext context) {
         NetworkRequest request = context.getRequest();
-
         ApiData apiData = context.getApiData();
+
         Credentials credentials = context.getCredentials();
-
         boolean maskCredentials = client.getConfig().isMaskCredentials();
-
-        Annotation[] annotations = apiData.getAnnotations();
-        List<AppKeyRequired> appKeyAnnotations = AnnotationUtil.getAnnotations(annotations, AppKeyRequired.class);
-        List<AppSecretRequired> appSecretAnnotations = AnnotationUtil.getAnnotations(annotations, AppSecretRequired.class);
-        List<AppTokenRequired> appTokenAnnotations = AnnotationUtil.getAnnotations(annotations, AppTokenRequired.class);
-        List<ApprovalKeyRequired> approvalKeyAnnotations = AnnotationUtil.getAnnotations(annotations, ApprovalKeyRequired.class);
 
         Map<String, Object> body = request.getBody();
         Map<String, Object> headers = request.getHeaders();
 
         Set<String> bodyKeys = new HashSet<>();
-        Set<String> headersKeys = new HashSet<>();
+        Set<String> headerKeys = new HashSet<>();
 
-        for (AppKeyRequired anno : appKeyAnnotations) {
-            if (anno.location() == AppKeyRequired.Location.BODY) {
-                bodyKeys.add(anno.key());
-                body.put(anno.key(), credentials.getAppKey());
-            } else if (anno.location() == AppKeyRequired.Location.HEADER) {
-                headersKeys.add(anno.key());
-                headers.put(anno.key(), credentials.getAppKey());
+        // 공통 할당 처리 람다: isBody가 true이면 body, 아니면 headers에 값 할당
+        BiConsumer<Boolean, Pair<String, Object>> assign = (isBody, pair) -> {
+            if (isBody) {
+                bodyKeys.add(pair.getFirst());
+                body.put(pair.getFirst(), pair.getSecond());
+            } else {
+                headerKeys.add(pair.getFirst());
+                headers.put(pair.getFirst(), pair.getSecond());
             }
+        };
+
+        // AppKeyRequired 처리
+        for (AppKeyRequired anno : AnnotationUtil.getAnnotations(apiData.getAnnotations(), AppKeyRequired.class)) {
+            boolean isBody = (anno.location() == AppKeyRequired.Location.BODY);
+            assign.accept(isBody, new Pair<>(anno.key(), credentials.getAppKey()));
         }
 
-        for (AppSecretRequired anno : appSecretAnnotations) {
-            if (anno.location() == AppSecretRequired.Location.BODY) {
-                bodyKeys.add(anno.key());
-                body.put(anno.key(), credentials.getAppSecret());
-            } else if (anno.location() == AppSecretRequired.Location.HEADER) {
-                headersKeys.add(anno.key());
-                headers.put(anno.key(), credentials.getAppSecret());
-            }
+        // AppSecretRequired 처리
+        for (AppSecretRequired anno : AnnotationUtil.getAnnotations(apiData.getAnnotations(), AppSecretRequired.class)) {
+            boolean isBody = (anno.location() == AppSecretRequired.Location.BODY);
+            assign.accept(isBody, new Pair<>(anno.key(), credentials.getAppSecret()));
         }
 
-        for (AppTokenRequired anno : appTokenAnnotations) {
-            String appToken = anno.prefix() + getAppToken(client, context);
-
-            if (anno.location() == AppTokenRequired.Location.BODY) {
-                bodyKeys.add(anno.key());
-                body.put(anno.key(), appToken);
-            } else if (anno.location() == AppTokenRequired.Location.HEADER) {
-                headersKeys.add(anno.key());
-                headers.put(anno.key(), appToken);
-            }
+        // AppTokenRequired 처리
+        for (AppTokenRequired anno : AnnotationUtil.getAnnotations(apiData.getAnnotations(), AppTokenRequired.class)) {
+            boolean isBody = (anno.location() == AppTokenRequired.Location.BODY);
+            String token = anno.prefix() + getAppToken(client, context);
+            assign.accept(isBody, new Pair<>(anno.key(), token));
         }
 
-        for (ApprovalKeyRequired anno : approvalKeyAnnotations) {
+        // ApprovalKeyRequired 처리
+        for (ApprovalKeyRequired anno : AnnotationUtil.getAnnotations(apiData.getAnnotations(), ApprovalKeyRequired.class)) {
+            boolean isBody = (anno.location() == ApprovalKeyRequired.Location.BODY);
             String approvalKey = getApprovalKey(client, context);
-
-            if (anno.location() == ApprovalKeyRequired.Location.BODY) {
-                bodyKeys.add(anno.key());
-                body.put(anno.key(), approvalKey);
-            } else if (anno.location() == ApprovalKeyRequired.Location.HEADER) {
-                headersKeys.add(anno.key());
-                headers.put(anno.key(), approvalKey);
-            }
+            assign.accept(isBody, new Pair<>(anno.key(), approvalKey));
         }
 
         if (maskCredentials) {
             request.setBody(CredentialsUtil.maskMap(body, bodyKeys.toArray(new String[0])));
-            request.setHeaders(CredentialsUtil.maskMap(headers, bodyKeys.toArray(new String[0])));
+            request.setHeaders(CredentialsUtil.maskMap(headers, headerKeys.toArray(new String[0])));
         }
     }
 
@@ -171,7 +162,23 @@ public class AuthMiddleware implements Middleware {
     }
 
     private boolean isExpired(LocalDateTime expiredAt) {
-        return expiredAt.isBefore(LocalDateTime.now().minusMinutes(1));
+        return expiredAt.isBefore(LocalDateTime.now().minusMinutes(10));
+    }
+
+    private String getAppToken(KisClient client, ApiContext context) {
+        Credentials credentials = context.getCredentials();
+
+        String token = getAppTokenFromCache(credentials);
+        if (token != null) {
+            return token;
+        }
+
+        token = getAppTokenFromCredentials(credentials);
+        if (token != null) {
+            return token;
+        }
+
+        return fetchAppTokenFromServer(client, credentials);
     }
 
     private String getAppTokenFromCache(Credentials credentials) {
@@ -190,14 +197,7 @@ public class AuthMiddleware implements Middleware {
         return null;
     }
 
-    private String getAppToken(KisClient client, ApiContext context) {
-        Credentials credentials = context.getCredentials();
-
-        String cachedToken = getAppTokenFromCache(credentials);
-        if (cachedToken != null) {
-            return cachedToken;
-        }
-
+    private String getAppTokenFromCredentials(Credentials credentials) {
         if (credentials.getAppToken() != null) {
             if (credentials.getAppTokenExpiredAt() == null) {
                 return credentials.getAppToken();
@@ -208,38 +208,37 @@ public class AuthMiddleware implements Middleware {
             if (!isExpired(expiredAt)) {
                 return credentials.getAppToken();
             } else {
-                logger.warn("The appToken in Credentials seems to have expired (appTokenExpiredAt value has passed), request a new one.");
+                logger.warn("Credentials의 appToken이 만료되어(appTokenExpiredAt이 지났습니다.), 재발급을 시도합니다.");
             }
         }
 
-        ReentrantLock lock = locks.computeIfAbsent(credentials.getAppKey(), k -> new ReentrantLock());
+        return null;
+    }
 
-        synchronized (lock) {
-            cachedToken = getAppTokenFromCache(credentials);
+    private String fetchAppTokenFromServer(KisClient client, Credentials credentials) {
+        ReentrantLock lock = locks.computeIfAbsent(credentials.getAppKey(), k -> new ReentrantLock());
+        lock.lock();
+        try {
+            String cachedToken = getAppTokenFromCache(credentials);
             if (cachedToken != null) {
                 return cachedToken;
             }
 
-            // fetch token
             while (true) {
                 try {
                     GetTokenApi req = new GetTokenApi();
                     GetTokenResult resp = client.execute(req, credentials);
 
-                    // save token to cache
                     LocalDateTime expiredAt = DateUtil.toLocalDateTime(resp.getAccessTokenTokenExpired());
                     Pair<String, LocalDateTime> tokenInfo = new Pair<>(resp.getAccessToken(), expiredAt);
                     appTokens.put(credentials.getAppKey(), tokenInfo);
 
                     return resp.getAccessToken();
                 } catch (InvalidApiRequestException e) {
-                    // 접근 토큰은 1분당 1회만 발급 가능하므로 잠시 대기 후 다시 시도
                     if (e.getMessage().contains("\"error_code\":\"EGW00133\"")) {
-                        try {
-                            Thread.sleep(10000);
-                        } catch (InterruptedException ee) {
+                        logger.info("AppToken 발급 주기가 짧아 발급이 거절되었습니다. 10초 후 재시도합니다.");
 
-                        }
+                        LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(10000));
 
                         continue;
                     }
@@ -247,8 +246,9 @@ public class AuthMiddleware implements Middleware {
                     throw e;
                 }
             }
+        } finally {
+            lock.unlock();
         }
-
     }
 
 }
