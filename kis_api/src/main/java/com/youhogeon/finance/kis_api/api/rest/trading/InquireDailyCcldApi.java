@@ -105,7 +105,7 @@ public class InquireDailyCcldApi extends CommonRestApi<InquireDailyCcldResult> {
      * 1: ELW
      * 2: 프리보드
      */
-    @Parameter
+    @Parameter("INQR_DVSN_1")
     private String inqrDvsn1 = "";
 
     /**
@@ -120,7 +120,7 @@ public class InquireDailyCcldApi extends CommonRestApi<InquireDailyCcldResult> {
      * 06 자기융자신규/상환
      * 07 유통융자신규/상환
      */
-    @Parameter
+    @Parameter("INQR_DVSN_3")
     private String inqrDvsn3 = "00";
 
     /**
