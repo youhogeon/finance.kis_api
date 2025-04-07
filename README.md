@@ -65,18 +65,19 @@ Configuration config = new Configuration();
 config.addCredentials(c1);
 config.addCredentials(c2);
 
-// 아래와 같이 Credentials에 이름 지정하여 등록 가능.
-// 이 경우, API 호출 시 특정 이름을 가진 Credentials 로 API 호출 가능함.
-// 그렇지 않으면, 이름을 지정하여 호출 불가능하고, 자동 선택에 맡겨야 함.
-//
+// 아래와 같이 Credentials에 이름을 지정하여 등록 가능.
 // config.addCredentials("firstAccount", c1);
 // config.addCredentials("secondAccount", c2);
-
-// 다중 계좌인 경우, 호출시 이름을 지정하지 않았을 때 CredentialsSelector 에 의해 Credentials가 자동 선택됨.
-// 아래와 같이 사용할 CredentialsSelector 지정 가능. CredentialsSelector를 구현하는 custom 구현체를 작성하여 추가 가능
 // 
-// config.setCredentialsSelector(new SimpleCredentialsSelector()); // 1 (기본값)
-// config.setCredentialsSelector(new RoundRobinCredentialsSelector()); // 또는 2
+// 이 경우, API 호출 시 특정 이름을 가진 Credentials 로 API 호출 가능함.
+// client.execute("secondAccount", new InquirePriceApi("005930")); // secondAccount Credentials로 실행
+
+// 호출시 이름을 지정하지 않으면 CredentialsSelector 에 의해 Credentials가 자동 선택됨.
+//
+// 아래와 같이 사용할 CredentialsSelector 지정 가능.
+// 또는 CredentialsSelector를 구현하는 custom 구현체를 직접 작성하여 추가 가능.
+// 
+// config.setCredentialsSelector(new RoundRobinCredentialsSelector()); // 기본값
 
 KisClient client = new KisClient(config);
 ```

@@ -20,7 +20,6 @@ public class RoundRobinCredentialsSelector extends SimpleCredentialsSelector {
             throw new IllegalArgumentException("Credentials not found");
         }
 
-        // credentials 배열의 크기가 변경되었으면 재설정
         if (credentialsMap.size() != credentials.length) {
             credentials = credentialsMap.values().toArray(new Credentials[0]);
         }

@@ -59,7 +59,7 @@ public class Configuration {
     private boolean maskCredentials = true;
 
     private Map<String, Credentials> credentials = new HashMap<>();
-    private CredentialsSelectionStrategy credentialsSelector = new SimpleCredentialsSelector();
+    private CredentialsSelectionStrategy credentialsSelector = new RoundRobinCredentialsSelector();
 
     private List<Middleware> middlewares = new ArrayList<>();
 
