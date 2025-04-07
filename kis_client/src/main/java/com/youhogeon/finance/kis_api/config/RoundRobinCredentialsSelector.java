@@ -1,6 +1,7 @@
 package com.youhogeon.finance.kis_api.config;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * RoundRobinCredentialsSelector
@@ -10,20 +11,22 @@ import java.util.Map;
  */
 public class RoundRobinCredentialsSelector extends SimpleCredentialsSelector {
 
-    private int index = 0;
-    private Credentials[] credentials = new Credentials[0];
+    private final AtomicInteger index = new AtomicInteger(0);
+    private volatile Credentials[] credentials = new Credentials[0];
 
     @Override
-    public Credentials getCredentials(Map<String, Credentials> credentials) {
-        if (credentials.isEmpty()) {
+    public Credentials getCredentials(Map<String, Credentials> credentialsMap) {
+        if (credentialsMap.isEmpty()) {
             throw new IllegalArgumentException("Credentials not found");
         }
 
-        if (credentials.size() != this.credentials.length) {
-            this.credentials = credentials.values().toArray(new Credentials[0]);
+        // credentials 배열의 크기가 변경되었으면 재설정
+        if (credentialsMap.size() != credentials.length) {
+            credentials = credentialsMap.values().toArray(new Credentials[0]);
         }
 
-        return this.credentials[index++ % this.credentials.length];
+        int pos = index.getAndIncrement();
+        return credentials[pos % credentials.length];
     }
 
 }
