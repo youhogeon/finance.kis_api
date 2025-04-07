@@ -44,7 +44,7 @@ public class InquireTimeDailychartpriceApi extends CommonRestApi<InquireTimeDail
      *
      * 입력 시간(ex 13시 130000)
      */
-    @Parameter
+    @Parameter("FID_INPUT_HOUR_1")
     @NonNull
     private String fidInputHour1;
 
@@ -53,7 +53,7 @@ public class InquireTimeDailychartpriceApi extends CommonRestApi<InquireTimeDail
      *
      * 입력 날짜(20241023)
      */
-    @Parameter
+    @Parameter("FID_INPUT_DATE_1")
     @NonNull
     private String fidInputDate1;
 

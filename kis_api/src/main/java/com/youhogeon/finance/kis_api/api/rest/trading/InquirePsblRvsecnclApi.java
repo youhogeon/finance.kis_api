@@ -27,7 +27,7 @@ public class InquirePsblRvsecnclApi extends CommonRestApi<InquirePsblRvsecnclRes
      * '0 주문
      * 1 종목'
      */
-    @Parameter
+    @Parameter("INQR_DVSN_1")
     private String inqrDvsn1 = "0";
 
     /**
@@ -37,7 +37,7 @@ public class InquirePsblRvsecnclApi extends CommonRestApi<InquirePsblRvsecnclRes
      * 1 매도
      * 2 매수'
      */
-    @Parameter
+    @Parameter("INQR_DVSN_2")
     private String inqrDvsn2 = "0";
 
     /**

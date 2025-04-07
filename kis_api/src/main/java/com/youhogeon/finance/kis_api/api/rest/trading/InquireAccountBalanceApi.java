@@ -26,7 +26,7 @@ public class InquireAccountBalanceApi extends CommonRestApi<InquireAccountBalanc
      *
      * 공백입력
      */
-    @Parameter
+    @Parameter("INQR_DVSN_1")
     private String inqrDvsn1 = "";
 
     /**

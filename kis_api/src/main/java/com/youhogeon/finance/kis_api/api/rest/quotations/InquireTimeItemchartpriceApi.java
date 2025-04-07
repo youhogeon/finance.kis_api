@@ -44,7 +44,7 @@ public class InquireTimeItemchartpriceApi extends CommonRestApi<InquireTimeItemc
      *
      * 입력시간
      */
-    @Parameter
+    @Parameter("FID_INPUT_HOUR_1")
     private String fidInputHour1 = "";
 
     /**

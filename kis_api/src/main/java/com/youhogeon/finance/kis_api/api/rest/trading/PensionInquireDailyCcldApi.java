@@ -48,7 +48,7 @@ public class PensionInquireDailyCcldApi extends CommonRestApi<PensionInquireDail
      *
      * 00 : 전체
      */
-    @Parameter
+    @Parameter("INQR_DVSN_3")
     private String inqrDvsn3 = "00";
 
     /**

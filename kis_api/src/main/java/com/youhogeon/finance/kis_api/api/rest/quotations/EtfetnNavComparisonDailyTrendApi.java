@@ -44,7 +44,7 @@ public class EtfetnNavComparisonDailyTrendApi extends CommonRestApi<EtfetnNavCom
      *
      * 조회 시작일자 (ex. 20240101)
      */
-    @Parameter
+    @Parameter("FID_INPUT_DATE_1")
     @NonNull
     private String fidInputDate1;
 
@@ -53,7 +53,7 @@ public class EtfetnNavComparisonDailyTrendApi extends CommonRestApi<EtfetnNavCom
      *
      * 조회 종료일자 (ex. 20240220)
      */
-    @Parameter
+    @Parameter("FID_INPUT_DATE_2")
     @NonNull
     private String fidInputDate2;
 
