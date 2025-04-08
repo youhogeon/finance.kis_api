@@ -29,11 +29,11 @@ public abstract class CommonRealTimeApi<T extends ApiResult> implements Api<T> {
     private String contentType = "utf-8";
 
     @NonNull
-    @Body
+    @Body("tr_id")
     private String trId;
 
     @NonNull
-    @Body
+    @Body("tr_key")
     private String trKey;
 
 }
