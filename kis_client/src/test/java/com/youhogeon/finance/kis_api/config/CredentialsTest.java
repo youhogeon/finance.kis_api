@@ -17,7 +17,9 @@ public class CredentialsTest {
         Credentials credentials1 = new Credentials("myApiKey", "myApiSecret");
         Credentials credentials2 = new Credentials("myApiKey", "myApiSecret");
 
-        assert(credentials1.equals(credentials2));
+        assert(credentials1.equals(credentials1));
+        assert(credentials2.equals(credentials2));
+        assert(!credentials1.equals(credentials2));
 
         credentials2 = new Credentials("yourApiKey", "yourApiSecret");
         assert(!credentials1.equals(credentials2));
