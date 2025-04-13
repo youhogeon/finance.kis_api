@@ -1,11 +1,13 @@
 package com.youhogeon.finance.kis_api.config;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * API 인증 정보
  */
-@Data
+@Getter
+@Setter
 public class Credentials {
 
     private String appKey;
@@ -46,20 +48,6 @@ public class Credentials {
        this.appSecret = apiSecret;
        this.accountNo = accountNo;
        this.accountProductCode = accountProductCode;
-    }
-
-    public boolean equals(Object obj) {
-        if (obj == null) return false;
-        if (obj == this) return true;
-        if (obj.getClass() != this.getClass()) return false;
-
-        Credentials other = (Credentials)obj;
-
-        return this.appKey.equals(other.appKey) && this.appSecret.equals(other.appSecret);
-    }
-
-    public int hashCode() {
-        return appKey.hashCode() + appSecret.hashCode();
     }
 
 }
