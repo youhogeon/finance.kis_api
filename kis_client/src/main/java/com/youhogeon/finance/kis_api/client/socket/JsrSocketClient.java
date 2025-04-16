@@ -307,8 +307,8 @@ public class JsrSocketClient extends SocketClient {
     private void setEncryptionKeys(WebSocketResponse response) {
         Map<String, String> output = response.getBody().getOutput();
 
-        aesKey = output.get("aes_key");
-        ivKey = output.get("iv_key");
+        aesKey = output.get("key");
+        ivKey = output.get("iv");
     }
 
     private String[][] parseBody(String body, boolean isEncrypted, int size) {
