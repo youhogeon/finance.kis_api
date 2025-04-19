@@ -4,6 +4,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import com.youhogeon.finance.kis_api.KisClient;
+import com.youhogeon.finance.kis_api.api.special.RateLimitInfoResult;
 import com.youhogeon.finance.kis_api.client.http.HttpClientRequest;
 import com.youhogeon.finance.kis_api.config.Credentials;
 import com.youhogeon.finance.kis_api.context.ApiContext;
@@ -15,7 +16,20 @@ public class RateLimitingMiddleware implements Middleware {
 
     @Override
     public void afterInit(KisClient client, ApiContext context) {
+        if (context.getApiData().getResponseClass() == RateLimitInfoResult.class) {
+            Credentials credentials = context.getCredentials();
+            RateLimiter limiter = rateLimiters.get(credentials);
 
+            RateLimitInfoResult result = new RateLimitInfoResult();
+
+            if (limiter == null) {
+                result.setRemainingQuota(credentials.getRestLimitPerSecond());
+            } else {
+                result.setRemainingQuota(limiter.getRemainingQuota());
+            }
+
+            context.setApiResult(result);
+        }
     }
 
     @Override

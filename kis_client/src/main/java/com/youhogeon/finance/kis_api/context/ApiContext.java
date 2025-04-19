@@ -7,15 +7,19 @@ import com.youhogeon.finance.kis_api.client.NetworkResponse;
 import com.youhogeon.finance.kis_api.config.Credentials;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 
 /**
  * API 요청에 대한 정보를 담은 객체
  */
 @Data
-@RequiredArgsConstructor
+@NoArgsConstructor
 public class ApiContext {
+
+    public ApiContext(Credentials credentials) {
+        this.credentials = credentials;
+    }
 
     /**
      * 인증 정보
@@ -25,9 +29,9 @@ public class ApiContext {
     /**
      * Api Class에서 추출한 데이터를 담은 객체
      */
-    private ApiData apiData;
+    private @NonNull ApiData apiData;
 
-    private NetworkClient networkClient;
+    private @NonNull NetworkClient networkClient;
 
     /**
      * 서버에 요청 보낼 데이터를 담은 객체

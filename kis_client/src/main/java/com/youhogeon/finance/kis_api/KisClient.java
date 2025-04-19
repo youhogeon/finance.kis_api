@@ -13,6 +13,7 @@ import com.youhogeon.finance.kis_api.api.ApiResult;
 import com.youhogeon.finance.kis_api.client.NetworkClient;
 import com.youhogeon.finance.kis_api.client.NetworkRequest;
 import com.youhogeon.finance.kis_api.client.http.JavaHttpClient;
+import com.youhogeon.finance.kis_api.client.nothing.NothingClient;
 import com.youhogeon.finance.kis_api.client.socket.JsrSocketClient;
 import com.youhogeon.finance.kis_api.config.Configuration;
 import com.youhogeon.finance.kis_api.config.Credentials;
@@ -50,7 +51,8 @@ public class KisClient {
 
         clients = new NetworkClient[] {
             new JavaHttpClient(config),
-            new JsrSocketClient(config)
+            new JsrSocketClient(config),
+            new NothingClient()
         };
 
         logger.info("{} initialized successfully.", this.getClass().getSimpleName());

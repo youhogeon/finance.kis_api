@@ -78,8 +78,12 @@ public class AuthMiddleware implements Middleware {
 
     @Override
     public void before(KisClient client, ApiContext context) {
-        NetworkRequest request = context.getRequest();
         ApiData apiData = context.getApiData();
+        NetworkRequest request = context.getRequest();
+
+        if (request == null) {
+            return;
+        }
 
         Credentials credentials = context.getCredentials();
         boolean maskCredentials = client.getConfig().isMaskCredentials();

@@ -2,6 +2,9 @@ package com.youhogeon.finance.kis_api.util;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class RateLimiter {
 
@@ -9,36 +12,61 @@ public class RateLimiter {
     private final long windowSizeInMillis = 1000; // 1초 단위
     private final Queue<Long> requestTimestamps = new ConcurrentLinkedQueue<>();
 
+    private final ReentrantLock lock = new ReentrantLock();
+    private final Condition condition = lock.newCondition();
+
     public RateLimiter(int limit) {
         this.limit = limit;
     }
 
     public void acquire() {
-        while (true) {
-            synchronized (this) {
+        lock.lock();
+
+        try {
+            while (true) {
                 long now = System.currentTimeMillis();
 
-                // 오래된 요청 제거
                 while (!requestTimestamps.isEmpty() && requestTimestamps.peek() <= now - windowSizeInMillis) {
                     requestTimestamps.poll();
                 }
+
                 if (requestTimestamps.size() < limit) {
                     requestTimestamps.add(now);
+                    condition.signalAll();
                     return;
                 }
 
-                long earliestRequest = requestTimestamps.peek();
-                long waitTime = windowSizeInMillis - (now - earliestRequest);
+                long earliest = requestTimestamps.peek();
+                long waitTime = windowSizeInMillis - (now - earliest);
 
                 if (waitTime > 0) {
                     try {
-                        this.wait(waitTime);
+                        condition.await(waitTime, TimeUnit.MILLISECONDS);
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
                         throw new RuntimeException("Thread interrupted", e);
                     }
                 }
             }
+        } finally {
+            lock.unlock();
         }
     }
+
+    public int getRemainingQuota() {
+        lock.lock();
+
+        try {
+            long now = System.currentTimeMillis();
+
+            while (!requestTimestamps.isEmpty() && requestTimestamps.peek() <= now - windowSizeInMillis) {
+                requestTimestamps.poll();
+            }
+
+            return limit - requestTimestamps.size();
+        } finally {
+            lock.unlock();
+        }
+    }
+
 }

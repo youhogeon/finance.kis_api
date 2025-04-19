@@ -11,6 +11,7 @@ import com.youhogeon.finance.kis_api.api.annotation.Header;
 import com.youhogeon.finance.kis_api.api.annotation.Parameter;
 import com.youhogeon.finance.kis_api.api.annotation.RealTimeApi;
 import com.youhogeon.finance.kis_api.api.annotation.RestApi;
+import com.youhogeon.finance.kis_api.api.annotation.VirtualApi;
 import com.youhogeon.finance.kis_api.context.ApiData;
 import com.youhogeon.finance.kis_api.exception.InvalidApiSpecException;
 import com.youhogeon.finance.kis_api.util.AnnotationUtil;
@@ -92,6 +93,12 @@ public class ApiParser {
     private Pair<String, String> getUrlPath() {
         if (urlPathCache.containsKey(clazz)) {
             return urlPathCache.get(clazz);
+        }
+
+        VirtualApi virtualApi = clazz.getAnnotation(VirtualApi.class);
+
+        if (virtualApi != null) {
+            return Pair.of("", "");
         }
 
         RestApi restApi = clazz.getAnnotation(RestApi.class);
