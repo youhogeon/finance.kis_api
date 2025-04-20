@@ -38,10 +38,10 @@ import com.youhogeon.finance.kis_api.util.Pair;
 
 public class AuthMiddleware implements Middleware {
 
-    private final ConcurrentMap<String, Pair<String, LocalDateTime>> appTokens = new ConcurrentHashMap<>();
-    private final ConcurrentMap<String, ReentrantLock> locks = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<String, Pair<String, LocalDateTime>> appTokens = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<String, ReentrantLock> locks = new ConcurrentHashMap<>();
 
-    private final ConcurrentMap<String, Pair<NetworkClient, String>> approvalKeys = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<String, Pair<NetworkClient, String>> approvalKeys = new ConcurrentHashMap<>();
 
     private static final Logger logger = LoggerFactory.getLogger(AuthMiddleware.class);
 
@@ -223,12 +223,13 @@ public class AuthMiddleware implements Middleware {
         ReentrantLock lock = locks.computeIfAbsent(credentials.getAppKey(), k -> new ReentrantLock());
         lock.lock();
         try {
-            String cachedToken = getAppTokenFromCache(credentials);
-            if (cachedToken != null) {
-                return cachedToken;
-            }
-
             while (true) {
+                String cachedToken = getAppTokenFromCache(credentials);
+
+                if (cachedToken != null) {
+                    return cachedToken;
+                }
+
                 try {
                     GetTokenApi req = new GetTokenApi();
                     GetTokenResult resp = client.execute(req, credentials);
