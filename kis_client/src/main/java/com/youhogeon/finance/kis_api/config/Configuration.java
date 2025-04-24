@@ -73,6 +73,20 @@ public class Configuration {
         this.credentials.put(name, credentials);
     }
 
+    public int removeCredentials(String name) {
+        return this.credentials.remove(name) != null ? 1 : 0;
+    }
+
+    public int removeCredentials(Credentials credentials) {
+        int before = this.credentials.size();
+
+        this.credentials.values().removeIf(c -> c.equals(credentials));
+
+        int removed = before - this.credentials.size();
+
+        return removed;
+    }
+
     public void setCredentialsSelector(CredentialsSelectionStrategy credentialsSelector) {
         this.credentialsSelector = credentialsSelector;
     }
