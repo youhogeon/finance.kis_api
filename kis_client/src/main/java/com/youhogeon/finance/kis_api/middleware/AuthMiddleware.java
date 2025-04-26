@@ -2,6 +2,7 @@ package com.youhogeon.finance.kis_api.middleware;
 
 import java.lang.annotation.Annotation;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -25,6 +26,8 @@ import com.youhogeon.finance.kis_api.api.rest.auth.GetSocketApprovalKeyApi;
 import com.youhogeon.finance.kis_api.api.rest.auth.GetSocketApprovalKeyResult;
 import com.youhogeon.finance.kis_api.api.rest.auth.GetTokenApi;
 import com.youhogeon.finance.kis_api.api.rest.auth.GetTokenResult;
+import com.youhogeon.finance.kis_api.api.special.PeekIssuedAppTokensResult;
+import com.youhogeon.finance.kis_api.api.special.PeekIssuedAppTokensResult.AppToken;
 import com.youhogeon.finance.kis_api.client.NetworkClient;
 import com.youhogeon.finance.kis_api.client.NetworkRequest;
 import com.youhogeon.finance.kis_api.config.Credentials;
@@ -47,33 +50,28 @@ public class AuthMiddleware implements Middleware {
 
     @Override
     public void afterInit(KisClient client, ApiContext context) {
-        ApiData apiData = context.getApiData();
-        Annotation[] annotations = apiData.getAnnotations();
-        Credentials credentials = context.getCredentials();
+        if (context.getApiData().getResponseClass() == PeekIssuedAppTokensResult.class) {
+            Map<String, AppToken> data = new HashMap<>();
 
-        for (AccountRequired anno : AnnotationUtil.getAnnotations(annotations, AccountRequired.class)) {
-            Map<String, Object> data = null;
-            switch (anno.location()) {
-                case HEADER:
-                    data = apiData.getHeaders();
-                    break;
-                case BODY:
-                    data = apiData.getBody();
-                    break;
-                case PARAMETER:
-                    data = apiData.getParameters();
-                    break;
+            PeekIssuedAppTokensResult result = new PeekIssuedAppTokensResult();
+            result.setAppTokens(data);
+
+            for (var entry : appTokens.entrySet()) {
+                data.put(
+                    entry.getKey(),
+                    new PeekIssuedAppTokensResult.AppToken(
+                        entry.getValue().getA(),
+                        entry.getValue().getB()
+                    )
+                );
             }
 
-            if (data != null) {
-                if (credentials.getAccountNo() == null || credentials.getAccountProductCode() == null) {
-                    throw new InvalidApiRequestException("Account information is required");
-                }
+            context.setApiResult(result);
 
-                data.put(anno.key1(), credentials.getAccountNo());
-                data.put(anno.key2(), credentials.getAccountProductCode());
-            }
+            return;
         }
+
+        injectAccountInfo(context);
     }
 
     @Override
@@ -94,7 +92,6 @@ public class AuthMiddleware implements Middleware {
         Set<String> bodyKeys = new HashSet<>();
         Set<String> headerKeys = new HashSet<>();
 
-        // 공통 할당 처리 람다: isBody가 true이면 body, 아니면 headers에 값 할당
         BiConsumer<Boolean, Pair<String, Object>> assign = (isBody, pair) -> {
             if (isBody) {
                 bodyKeys.add(pair.getFirst());
@@ -140,6 +137,36 @@ public class AuthMiddleware implements Middleware {
     @Override
     public void after(KisClient client, ApiContext context) {
 
+    }
+
+    private void injectAccountInfo(ApiContext context) {
+        ApiData apiData = context.getApiData();
+        Annotation[] annotations = apiData.getAnnotations();
+        Credentials credentials = context.getCredentials();
+
+        for (AccountRequired anno : AnnotationUtil.getAnnotations(annotations, AccountRequired.class)) {
+            Map<String, Object> data = null;
+            switch (anno.location()) {
+                case HEADER:
+                    data = apiData.getHeaders();
+                    break;
+                case BODY:
+                    data = apiData.getBody();
+                    break;
+                case PARAMETER:
+                    data = apiData.getParameters();
+                    break;
+            }
+
+            if (data != null) {
+                if (credentials.getAccountNo() == null || credentials.getAccountProductCode() == null) {
+                    throw new InvalidApiRequestException("Account information is required");
+                }
+
+                data.put(anno.key1(), credentials.getAccountNo());
+                data.put(anno.key2(), credentials.getAccountProductCode());
+            }
+        }
     }
 
     private String getApprovalKey(KisClient client, ApiContext context) {
@@ -210,6 +237,9 @@ public class AuthMiddleware implements Middleware {
             LocalDateTime expiredAt = DateUtil.toLocalDateTime(credentials.getAppTokenExpiredAt());
 
             if (!isExpired(expiredAt)) {
+                Pair<String, LocalDateTime> tokenInfo = new Pair<>(credentials.getAppToken(), expiredAt);
+                appTokens.put(credentials.getAppKey(), tokenInfo);
+
                 return credentials.getAppToken();
             } else {
                 logger.warn("Credentials의 appToken이 만료되어(appTokenExpiredAt이 지났습니다.), 재발급을 시도합니다.");
