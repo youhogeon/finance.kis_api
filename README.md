@@ -129,6 +129,17 @@ resp.addHandler((response) -> {
 
 지원하지 않는 API에 대해서는 아래 [사용자 정의 API Definition 추가 가이드](#optional-사용자-정의-api-definition-추가-가이드)를 참고하십시오.
 
+### 특수 API
+한국투자증권 API와 무관한 유틸 성격의 API를 지원합니다.
+* `RateLimitInfoApi` : Credentials의 잔여 유량 조회
+    ```
+    RateLimitInfoResult result = client.execute(new RateLimitInfoApi());
+    ```
+* `PeekIssuedAppTokensApi` : 발급받아 사용중인 AppToken 값 조회
+    ```
+    PeekIssuedAppTokensResult result = client.execute(new PeekIssuedAppTokensApi());
+    ```
+
 ## ⚙️ 주요 설정
 * Configuration
     * httpTimeout : HTTP Timeout (기본값: 10초)
