@@ -78,12 +78,6 @@ public class KisClient {
         return execute(api, credentials);
     }
 
-    /**
-     * @hidden
-     * Low level API request method.
-     *
-     * Do not use this method directly.
-     */
     public <T extends ApiResult> T execute(Api<T> api, Credentials credentials) {
         logger.trace("API Request begins [{}] {}", api.getClass().getSimpleName());
 
