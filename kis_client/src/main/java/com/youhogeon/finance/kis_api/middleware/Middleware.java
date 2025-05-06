@@ -6,7 +6,7 @@ import com.youhogeon.finance.kis_api.context.ApiContext;
 public interface Middleware {
 
     /**
-     * ApiData 생성 후 실행되는 ㅔ서드
+     * ApiData 생성 후 실행되는 메서드
      *
      * @param client Client 객체
      * @param context API 요청에 대한 정보를 담은 객체 (apiData 제외 모든 필드 null)
