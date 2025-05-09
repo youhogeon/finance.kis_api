@@ -16,15 +16,16 @@ public class RoundRobinCredentialsSelector extends SimpleCredentialsSelector {
     private volatile Credentials[] credentials = new Credentials[0];
 
     @Override
-    public Credentials getCredentials(Map<String, Credentials> credentialsMap) {
-        if (credentialsMap.isEmpty()) {
+    public void setCredentials(Map<String, Credentials> credentials) {
+        if (credentials.isEmpty()) {
             throw new IllegalArgumentException("Credentials not found");
         }
 
-        if (credentialsMap.size() != credentials.length) {
-            credentials = credentialsMap.values().toArray(new Credentials[0]);
-        }
+        this.credentials = credentials.values().toArray(new Credentials[0]);
+    }
 
+    @Override
+    public Credentials getCredentials() {
         int pos = index.getAndIncrement();
         return credentials[pos % credentials.length];
     }

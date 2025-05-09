@@ -4,8 +4,15 @@ import java.util.Map;
 
 public class SimpleCredentialsSelector implements CredentialsSelectionStrategy {
 
+    private volatile Map<String, Credentials> credentials;
+
     @Override
-    public Credentials getCredentials(Map<String, Credentials> credentials) {
+    public void setCredentials(Map<String, Credentials> credentials) {
+        this.credentials = credentials;
+    }
+
+    @Override
+    public Credentials getCredentials() {
         if (credentials.isEmpty()) {
             throw new IllegalArgumentException("Credentials not found");
         }
@@ -14,7 +21,7 @@ public class SimpleCredentialsSelector implements CredentialsSelectionStrategy {
     }
 
     @Override
-    public Credentials getCredentials(Map<String, Credentials> credentials, String name) {
+    public Credentials getCredentials(String name) {
         if (!credentials.containsKey(name)) {
             throw new IllegalArgumentException("Credentials not found: " + name);
         }

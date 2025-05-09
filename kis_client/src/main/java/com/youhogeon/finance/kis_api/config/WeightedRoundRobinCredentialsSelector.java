@@ -16,28 +16,16 @@ public class WeightedRoundRobinCredentialsSelector extends SimpleCredentialsSele
     private volatile Credentials[] wheel = new Credentials[0]; // length == totalWeight
 
     @Override
-    public Credentials getCredentials(Map<String, Credentials> map) {
-        if (map.isEmpty()) {
-            throw new IllegalArgumentException("Credentials not found");
-        }
+    public void setCredentials(Map<String, Credentials> credentials) {
+        rebuild(credentials);
+    }
 
-        if (needsRebuild(map)) {
-            rebuild(map);
-        }
 
+    @Override
+    public Credentials getCredentials() {
         int pos = Math.abs(index.getAndIncrement() % wheel.length);
 
         return wheel[pos];
-    }
-
-    private boolean needsRebuild(Map<String, Credentials> map) {
-        int weightSum = 0;
-
-        for (Credentials c : map.values()) {
-            weightSum += c.getRestLimitPerSecond();
-        }
-
-        return wheel.length != weightSum;
     }
 
     private void rebuild(Map<String, Credentials> map) {

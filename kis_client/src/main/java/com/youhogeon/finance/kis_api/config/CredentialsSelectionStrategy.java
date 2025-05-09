@@ -4,7 +4,9 @@ import java.util.Map;
 
 public interface CredentialsSelectionStrategy {
 
-    public Credentials getCredentials(Map<String, Credentials> credentials);
-    public Credentials getCredentials(Map<String, Credentials> credentials, String name);
+    public void setCredentials(Map<String, Credentials> credentials);
+
+    public Credentials getCredentials();
+    public Credentials getCredentials(String name);
 
 }

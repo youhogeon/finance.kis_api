@@ -71,10 +71,17 @@ public class Configuration {
 
     public void addCredentials(String name, Credentials credentials) {
         this.credentials.put(name, credentials);
+        this.credentialsSelector.setCredentials(this.credentials);
     }
 
     public int removeCredentials(String name) {
-        return this.credentials.remove(name) != null ? 1 : 0;
+        var result = this.credentials.remove(name) != null ? 1 : 0;
+
+        if (result == 1) {
+            this.credentialsSelector.setCredentials(this.credentials);
+        }
+
+        return result;
     }
 
     public int removeCredentials(Credentials credentials) {
@@ -83,6 +90,10 @@ public class Configuration {
         this.credentials.values().removeIf(c -> c.equals(credentials));
 
         int removed = before - this.credentials.size();
+
+        if (removed > 0) {
+            this.credentialsSelector.setCredentials(this.credentials);
+        }
 
         return removed;
     }
@@ -96,11 +107,11 @@ public class Configuration {
     }
 
     public Credentials getCredentials() {
-        return credentialsSelector.getCredentials(credentials);
+        return credentialsSelector.getCredentials();
     }
 
     public Credentials getCredentials(String name) {
-        return credentialsSelector.getCredentials(credentials, name);
+        return credentialsSelector.getCredentials(name);
     }
 
     public void addMiddleWare(Middleware middleware) {
