@@ -193,7 +193,7 @@ public class AuthMiddleware implements Middleware {
     }
 
     private boolean isExpired(LocalDateTime expiredAt) {
-        return expiredAt.isBefore(LocalDateTime.now().minusMinutes(10));
+        return expiredAt.isBefore(LocalDateTime.now().plusMinutes(10));
     }
 
     private String getAppToken(KisClient client, ApiContext context) {
@@ -231,6 +231,8 @@ public class AuthMiddleware implements Middleware {
     private String getAppTokenFromCredentials(Credentials credentials) {
         if (credentials.getAppToken() != null) {
             if (credentials.getAppTokenExpiredAt() == null) {
+                logger.warn("Credentials의 appTokenExpiredAt이 null입니다. appToken 자동 재발급을 하지 않습니다.");
+
                 return credentials.getAppToken();
             }
 
