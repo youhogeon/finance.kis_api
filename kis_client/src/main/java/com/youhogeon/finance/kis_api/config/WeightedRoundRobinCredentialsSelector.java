@@ -18,6 +18,7 @@ public class WeightedRoundRobinCredentialsSelector extends SimpleCredentialsSele
     @Override
     public void setCredentials(Map<String, Credentials> credentials) {
         rebuild(credentials);
+        super.setCredentials(credentials);
     }
 
 
