@@ -28,7 +28,9 @@ import com.youhogeon.finance.kis_api.util.ReflectionUtil;
 import com.youhogeon.finance.kis_api.util.StringUtil;
 
 import jakarta.websocket.ClientEndpoint;
+import jakarta.websocket.CloseReason;
 import jakarta.websocket.ContainerProvider;
+import jakarta.websocket.OnClose;
 import jakarta.websocket.OnMessage;
 import jakarta.websocket.OnOpen;
 import jakarta.websocket.Session;
@@ -97,6 +99,11 @@ public class JsrSocketClient extends SocketClient {
         logger.info("Connected to websocket server successfully.");
 
         this.session = session;
+    }
+
+    @OnClose
+    public void onClose(Session userSession, CloseReason reason) {
+        logger.info("socket closed {} {}", reason.getReasonPhrase(), reason);
     }
 
     @OnMessage
